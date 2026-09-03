@@ -35,7 +35,7 @@ jobs:
 
           cd build_app
 
-          # Write config.xml with Splash Screen disabled
+          # Write config.xml
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
           <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
@@ -44,20 +44,21 @@ jobs:
               <author>PrepFlow Team</author>
               <content src="index.html" />
               <icon src="logo.png" />
-              
-              <preference name="SplashScreen" value="none" />
-              <preference name="SplashScreenDelay" value="0" />
-              <preference name="AutoHideSplashScreen" value="true" />
-              <preference name="FadeSplashScreen" value="false" />
-              <preference name="ShowSplashScreenSpinner" value="false" />
-              <preference name="AndroidPostSplashScreenTheme" value="@style/Theme.AppCompat.NoActionBar" />
-              
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
           </widget>
           CFG
 
           cordova platform add android
+
+          # Force disable Android Splash Screen Theme directly in native styles.xml
+          STYLES_FILE="platforms/android/app/src/main/res/values/styles.xml"
+          if [ -f "$STYLES_FILE" ]; then
+            sed -i 's/parent="Theme.App.Starting"/parent="Theme.AppCompat.NoActionBar"/g' "$STYLES_FILE" || true
+            sed -i '/<item name="windowSplashScreenAnimatedIcon">/d' "$STYLES_FILE" || true
+            sed -i '/<item name="postSplashScreenTheme">/d' "$STYLES_FILE" || true
+          fi
+
           cordova build android --debug
 
       - name: Upload APK Artifact
