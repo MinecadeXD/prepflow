@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install Cordova
         run: npm install -g cordova
@@ -28,42 +28,36 @@ jobs:
         run: |
           cordova create build_app com.prepflow.tracker PrepFlow
           
-          # Copy source files
+          # Copy web assets
           cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
           cp logo.png build_app/logo.png
 
           cd build_app
 
-          # Write config.xml with explicit splashscreen icon mapping & dark background
+          # Config without invalid splash tags
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
+          <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
               <name>PrepFlow</name>
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
               <content src="index.html" />
               <icon src="logo.png" />
-              
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
-
-              <platform name="android">
-                  <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
-                  <preference name="AndroidWindowSplashScreenBackground" value="#0b0f17" />
-                  <preference name="SplashScreenDelay" value="0" />
-              </platform>
+              <preference name="AndroidWindowSplashScreenBackground" value="#0b0f17" />
           </widget>
           CFG
 
-          cordova platform add android@12.0.0
+          cordova platform add android
 
-          # Inject dark theme & replace drawable splash resources manually before compilation
-          mkdir -p platforms/android/app/src/main/res/mipmap-hdpi
-          mkdir -p platforms/android/app/src/main/res/drawable
-          
-          cp logo.png platforms/android/app/src/main/res/drawable/ic_cdv_splashscreen.png || true
-          cp logo.png platforms/android/app/src/main/res/mipmap-hdpi/ic_launcher.png || true
+          # Replace default Cordova bot images with logo.png directly in native Android resource folders
+          RES_DIR="platforms/android/app/src/main/res"
+          if [ -d "$RES_DIR" ]; then
+            find "$RES_DIR" -name "ic_cdv_splashscreen.png" -exec cp ../logo.png {} \;
+            find "$RES_DIR" -name "screen.png" -exec cp ../logo.png {} \;
+          fi
 
           cordova build android --debug
 
