@@ -35,7 +35,7 @@ jobs:
 
           cd build_app
 
-          # Config without invalid splash tags
+          # Config mapping icon directly as Android resource
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
           <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
@@ -52,11 +52,16 @@ jobs:
 
           cordova platform add android
 
-          # Replace default Cordova bot images with logo.png directly in native Android resource folders
+          # Overwrite default bot vector drawables with logo image in Android resources
           RES_DIR="platforms/android/app/src/main/res"
           if [ -d "$RES_DIR" ]; then
-            find "$RES_DIR" -name "ic_cdv_splashscreen.png" -exec cp ../logo.png {} \;
-            find "$RES_DIR" -name "screen.png" -exec cp ../logo.png {} \;
+            # Replace PNG drawables
+            find "$RES_DIR" -name "*splash*" -exec cp ../logo.png {} \;
+            find "$RES_DIR" -name "*icon*" -exec cp ../logo.png {} \;
+            
+            # Remove default vector files that render the Cordova bot on Android 12+
+            find "$RES_DIR" -name "ic_cdv_splashscreen.xml" -delete || true
+            find "$RES_DIR" -name "ic_launcher_foreground.xml" -delete || true
           fi
 
           cordova build android --debug
