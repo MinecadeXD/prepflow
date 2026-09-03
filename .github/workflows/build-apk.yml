@@ -27,14 +27,28 @@ jobs:
       - name: Build PrepFlow APK via Cordova
         run: |
           cordova create build_app com.prepflow.tracker PrepFlow
+          
+          # Copy source files to Cordova web root
           cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
-          
-          if [ -f logo.png ]; then
-            cp logo.png build_app/www/res/icon.png || true
-          fi
+          cp logo.png build_app/logo.png
 
           cd build_app
+
+          # Write proper Cordova config.xml to force the icon
+          cat << 'CFG' > config.xml
+          <?xml version='1.0' encoding='utf-8'?>
+          <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+              <name>PrepFlow</name>
+              <description>11th Science &amp; MHT-CET Tracker</description>
+              <author>PrepFlow Team</author>
+              <content src="index.html" />
+              <icon src="logo.png" />
+              <preference name="ScrollEnabled" value="true" />
+              <preference name="android-minSdkVersion" value="22" />
+          </widget>
+          CFG
+
           cordova platform add android
           cordova build android --debug
 
