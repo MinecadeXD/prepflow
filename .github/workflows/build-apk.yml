@@ -55,7 +55,7 @@ jobs:
 
           cordova plugin remove cordova-plugin-splashscreen || true
 
-          cordova plugin add cordova-plugin-x-socialsharing
+          cordova plugin add ./cordova-plugin-save-backup
           cordova platform add android
           cordova build android --debug
 
