@@ -22,6 +22,11 @@ jobs:
           node-version: 20
 
       - name: Install Cordova
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Cordova CLI
         run: npm install -g cordova
 
       - name: Build PrepFlow APK via Cordova
@@ -36,13 +41,15 @@ jobs:
 
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.minecade.prepflow" version="1.1.0" android-versionCode="10100" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+          <widget id="com.minecade.prepflow" version="1.1.1" android-versionCode="10101" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
               <name>PrepFlow</name>
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
               <content src="index.html" />
+              <allow-navigation href="*" />
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
+              <preference name="AndroidInsecureFileModeEnabled" value="true" />
               <platform name="android">
                   <icon src="logo.png" />
                   <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
@@ -50,14 +57,18 @@ jobs:
               </platform>
           </widget>
           CFG
-          # Install the Cordova File plugin before adding the Android platform.
-          # This provides the native filesystem fallback used when Web Share with files
-          # is unavailable in the Android WebView.
-          cordova plugin add cordova-plugin-file
 
+          cordova plugin add cordova-plugin-file
           cordova platform add android
 
+          test -f www/index.html
+          test -f www/logo.png
+
           cordova build android --debug
+
+          test -f platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -l platforms/android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/www/index.html'
+          unzip -l platforms/android/app/build/outputs/apk/debug/app-debug.apk | grep -q 'assets/www/logo.png'
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
