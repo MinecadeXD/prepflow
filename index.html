@@ -527,6 +527,7 @@
         this.currentSubjectId = null;
         this.currentChapterId = null;
         this.subjectFilter = 'all';
+        this.navigationHistory = [];
 
         this.init();
       }
@@ -534,6 +535,10 @@
       init() {
         this.renderDashboard();
         this.setupModalSubjects();
+
+        // Handle Android hardware/system back button inside the WebView.
+        // Subject -> Dashboard, Chapter -> Subject, then Dashboard -> exit.
+        window.addEventListener('popstate', () => this.handleBackNavigation());
       }
 
       getDefaultData() {
@@ -603,18 +608,34 @@
         }
       }
 
-      navigateTo(view, param = null) {
+      navigateTo(view, param = null, addToHistory = true) {
+        const nextState = { view, param };
+
+        if (addToHistory) {
+          const currentState = { view: this.currentView, param: this.getCurrentNavigationParam() };
+          const lastState = this.navigationHistory[this.navigationHistory.length - 1];
+
+          if (currentState.view !== view || currentState.param !== param) {
+            if (!lastState || lastState.view !== currentState.view || lastState.param !== currentState.param) {
+              this.navigationHistory.push(currentState);
+            }
+          }
+        }
+
         this.currentView = view;
-        
+
         document.getElementById('view-dashboard').classList.add('hidden');
         document.getElementById('view-subject').classList.add('hidden');
         document.getElementById('view-chapter').classList.add('hidden');
 
         if (view === 'dashboard') {
+          this.currentSubjectId = null;
+          this.currentChapterId = null;
           this.renderDashboard();
           document.getElementById('view-dashboard').classList.remove('hidden');
         } else if (view === 'subject') {
           this.currentSubjectId = param;
+          this.currentChapterId = null;
           this.renderSubject(param);
           document.getElementById('view-subject').classList.remove('hidden');
         } else if (view === 'chapter') {
@@ -624,6 +645,24 @@
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      getCurrentNavigationParam() {
+        if (this.currentView === 'subject') return this.currentSubjectId;
+        if (this.currentView === 'chapter') return this.currentChapterId;
+        return null;
+      }
+
+      handleBackNavigation() {
+        if (this.navigationHistory.length > 0) {
+          const previous = this.navigationHistory.pop();
+          this.navigateTo(previous.view, previous.param, false);
+          return true;
+        }
+
+        // At the dashboard there is nowhere else to navigate inside the app.
+        // Returning false lets Android perform its normal back behavior (exit).
+        return false;
       }
 
       setSubjectFilter(filter) {
@@ -1105,6 +1144,20 @@
     let app;
     window.addEventListener('DOMContentLoaded', () => {
       app = new StudyTracker();
+
+      // Android WebView does not automatically know about this single-page
+      // app's internal navigation. Push a browser history entry whenever
+      // the app changes screens so the Android back button triggers popstate.
+      const originalNavigateTo = app.navigateTo.bind(app);
+      app.navigateTo = function(view, param = null, addToHistory = true) {
+        if (addToHistory && (this.currentView !== view || this.getCurrentNavigationParam() !== param)) {
+          history.pushState({ view, param }, '', window.location.href.split('#')[0] + '#' + view + (param ? ':' + encodeURIComponent(param) : ''));
+        }
+        return originalNavigateTo(view, param, addToHistory);
+      };
+
+      // Seed the initial dashboard state without creating a back entry.
+      history.replaceState({ view: 'dashboard', param: null }, '', window.location.href.split('#')[0]);
     });
   </script>
 </body>
