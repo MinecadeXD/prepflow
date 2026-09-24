@@ -51,7 +51,22 @@ jobs:
               'bg-amber-950/40', 'text-amber-400', 'border-amber-900/50',
               'bg-rose-950/40', 'text-rose-400', 'border-rose-900/50'
             ],
-            theme: { extend: {} },
+            theme: {
+              extend: {
+                colors: {
+                  darkbg: '#0b0f17',
+                  darkcard: '#111827',
+                  darksubCard: '#1a2234',
+                  darkborder: '#1e293b',
+                  brand: {
+                    400: '#38bdf8',
+                    500: '#0284c7',
+                    600: '#0284c7',
+                    700: '#0369a1'
+                  }
+                }
+              }
+            },
             plugins: []
           };
           TWCFG
