@@ -50,158 +50,83 @@ jobs:
               </platform>
           </widget>
           CFG
-          mkdir -p cordova-plugin-save-backup/www cordova-plugin-save-backup/src/android
+          cordova platform add android
 
-          cat << 'PKG' > cordova-plugin-save-backup/package.json
-          {
-            "name": "cordova-plugin-save-backup",
-            "version": "1.0.0",
-            "description": "Native Android Save As support for PrepFlow backups",
-            "cordova": {
-              "id": "com.minecade.prepflow.savebackup",
-              "platforms": ["android"]
-            },
-            "keywords": ["cordova", "backup", "android"],
-            "license": "MIT"
-          }
-          PKG
-
-          cat << 'PLUGIN' > cordova-plugin-save-backup/plugin.xml
-          <?xml version="1.0" encoding="utf-8"?>
-          <plugin id="com.minecade.prepflow.savebackup" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
-              <name>PrepFlow Save Backup</name>
-              <description>Native Android Save As support for PrepFlow backups.</description>
-              <js-module src="www/saveBackup.js" name="SaveBackup">
-                  <clobbers target="cordova.plugins.saveBackup" />
-              </js-module>
-              <platform name="android">
-                  <source-file src="src/android/SaveBackup.java" target-dir="src/com/minecade/prepflow/savebackup" />
-              </platform>
-          </plugin>
-          PLUGIN
-
-          cat << 'PLUGINJS' > cordova-plugin-save-backup/www/saveBackup.js
-          var exec = require('cordova/exec');
-          module.exports = {
-            create: function (json, fileName, success, error) {
-              exec(success || function () {}, error || function () {}, 'SaveBackup', 'create', [json, fileName]);
-            },
-            open: function (success, error) {
-              exec(success || function () {}, error || function () {}, 'SaveBackup', 'open', []);
-            }
-          };
-          PLUGINJS
-
-          cat << 'JAVA' > cordova-plugin-save-backup/src/android/SaveBackup.java
-          package com.minecade.prepflow.savebackup;
+          cat << 'JAVA' > platforms/android/app/src/main/java/com/minecade/prepflow/MainActivity.java
+          package com.minecade.prepflow;
 
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
-          import java.io.InputStream;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.WebView;
           import java.io.OutputStream;
-          import java.io.ByteArrayOutputStream;
           import java.nio.charset.StandardCharsets;
-          import org.apache.cordova.CallbackContext;
-          import org.apache.cordova.CordovaPlugin;
-          import org.json.JSONArray;
-          import org.json.JSONException;
+          import org.apache.cordova.CordovaActivity;
 
-          public class SaveBackup extends CordovaPlugin {
-              private static final int CREATE_DOCUMENT_REQUEST = 48127;
-              private static final int OPEN_DOCUMENT_REQUEST = 48128;
-              private CallbackContext pendingCallback;
-              private String pendingJson;
-              private boolean pendingOpen;
+          public class MainActivity extends CordovaActivity {
+              private static final int CREATE_BACKUP_REQUEST = 48127;
+              private String pendingBackupJson;
 
               @Override
-              public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-                  if ("create".equals(action)) {
-                      pendingCallback = callbackContext;
-                      pendingJson = args.getString(0);
-                      pendingOpen = false;
-                      String fileName = args.optString(1, "prepflow_backup.json");
+              public void onCreate(android.os.Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+                  WebView webView = (WebView) appView.getEngine().getView();
+                  webView.addJavascriptInterface(new PrepFlowAndroidBridge(), "AndroidPrepFlow");
+              }
 
-                      Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                      intent.addCategory(Intent.CATEGORY_OPENABLE);
-                      intent.setType("application/json");
-                      intent.putExtra(Intent.EXTRA_TITLE, fileName);
-                      cordova.getActivity().startActivityForResult(intent, CREATE_DOCUMENT_REQUEST);
-                      return true;
-                  }
-
-                  if ("open".equals(action)) {
-                      pendingCallback = callbackContext;
-                      pendingJson = null;
-                      pendingOpen = true;
-
-                      Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                      intent.addCategory(Intent.CATEGORY_OPENABLE);
-                      intent.setType("application/json");
-                      cordova.getActivity().startActivityForResult(intent, OPEN_DOCUMENT_REQUEST);
-                      return true;
-                  }
-
-                  return false;
+              private void notifyWeb(String message, boolean error) {
+                  if (appView == null) return;
+                  WebView webView = (WebView) appView.getEngine().getView();
+                  String safe = message.replace("\\", "\\\\").replace("'", "\\'");
+                  String type = error ? "error" : "info";
+                  webView.post(() -> webView.evaluateJavascript(
+                      "if(typeof app!=='undefined'&&app){app.showToast('" + safe + "','" + type + "');}", null));
               }
 
               @Override
-              public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                  if (pendingCallback == null) return;
-                  if (requestCode != CREATE_DOCUMENT_REQUEST && requestCode != OPEN_DOCUMENT_REQUEST) return;
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode != CREATE_BACKUP_REQUEST) return;
 
-                  CallbackContext callback = pendingCallback;
-                  String json = pendingJson;
-                  boolean opening = pendingOpen;
-                  pendingCallback = null;
-                  pendingJson = null;
-                  pendingOpen = false;
-
-                  if (resultCode != Activity.RESULT_OK || intent == null || intent.getData() == null) {
-                      callback.error(opening ? "Open cancelled" : "Save cancelled");
+                  if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || pendingBackupJson == null) {
+                      pendingBackupJson = null;
+                      notifyWeb("Backup export cancelled.", false);
                       return;
                   }
 
-                  Uri uri = intent.getData();
-
-                  if (opening) {
-                      try (InputStream input = cordova.getActivity().getContentResolver().openInputStream(uri)) {
-                          if (input == null) {
-                              callback.error("Could not open selected backup");
-                              return;
-                          }
-
-                          ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                          byte[] data = new byte[8192];
-                          int count;
-                          while ((count = input.read(data)) != -1) {
-                              buffer.write(data, 0, count);
-                          }
-
-                          callback.success(buffer.toString(StandardCharsets.UTF_8.name()));
-                      } catch (Exception e) {
-                          callback.error("Could not read backup: " + e.getMessage());
-                      }
-                      return;
-                  }
-
-                  try (OutputStream output = cordova.getActivity().getContentResolver().openOutputStream(uri)) {
-                      if (output == null) {
-                          callback.error("Could not open selected save location");
-                          return;
-                      }
-                      output.write(json.getBytes(StandardCharsets.UTF_8));
+                  Uri uri = data.getData();
+                  try (OutputStream output = getContentResolver().openOutputStream(uri, "w")) {
+                      if (output == null) throw new IllegalStateException("Could not open selected file");
+                      output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
                       output.flush();
-                      callback.success("Backup saved");
-                  } catch (Exception e) {
-                      callback.error("Could not save backup: " + e.getMessage());
+                      notifyWeb("Backup saved successfully!", false);
+                  } catch (Exception error) {
+                      error.printStackTrace();
+                      notifyWeb("Failed to export backup.", true);
+                  } finally {
+                      pendingBackupJson = null;
+                  }
+              }
+
+              public class PrepFlowAndroidBridge {
+                  @JavascriptInterface
+                  public void exportBackup(String json, String filename) {
+                      if (json == null || filename == null) return;
+
+                      runOnUiThread(() -> {
+                          pendingBackupJson = json;
+                          Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                          intent.addCategory(Intent.CATEGORY_OPENABLE);
+                          intent.setType("application/json");
+                          intent.putExtra(Intent.EXTRA_TITLE, filename);
+                          startActivityForResult(intent, CREATE_BACKUP_REQUEST);
+                      });
                   }
               }
           }
           JAVA
 
-          cordova plugin add ./cordova-plugin-save-backup
-          cordova platform add android
           cordova build android --debug
 
       - name: Upload APK Artifact
