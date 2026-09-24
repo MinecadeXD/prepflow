@@ -71,8 +71,16 @@ jobs:
               @Override
               public void onCreate(android.os.Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
-                  WebView webView = (WebView) appView.getEngine().getView();
-                  webView.addJavascriptInterface(new PrepFlowAndroidBridge(), "AndroidPrepFlow");
+
+                  // Register after Cordova has attached the WebView. Never touch
+                  // appView during the critical Activity startup path.
+                  getWindow().getDecorView().post(() -> {
+                      if (appView == null || appView.getEngine() == null) return;
+                      WebView webView = (WebView) appView.getEngine().getView();
+                      if (webView != null) {
+                          webView.addJavascriptInterface(new PrepFlowAndroidBridge(), "AndroidPrepFlow");
+                      }
+                  });
               }
 
               private void notifyWeb(String message, boolean error) {
@@ -96,7 +104,7 @@ jobs:
                   }
 
                   Uri uri = data.getData();
-                  try (OutputStream output = getContentResolver().openOutputStream(uri, "w")) {
+                  try (OutputStream output = getContentResolver().openOutputStream(uri)) {
                       if (output == null) throw new IllegalStateException("Could not open selected file");
                       output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
                       output.flush();
