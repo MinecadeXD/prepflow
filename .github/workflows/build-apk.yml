@@ -51,18 +51,16 @@ jobs:
           </widget>
           CFG
 
-          # Install the plugin AFTER writing config.xml so Cordova records it
-          # in config.xml instead of having it overwritten.
+          # Register the local backup plugin before generating the Android platform.
           cordova plugin add ../cordova-plugin-prepflow-backup
-
-          # Add the Android platform after the plugin is registered so the
-          # native Java class and JS bridge are included in the APK.
           cordova platform add android
 
-          # Fail the build if the bridge was not actually packaged.
+          # Verify both halves of the native bridge are packaged.
+          test -f plugins/cordova-plugin-prepflow-backup/www/prepflow-backup.js
+          test -f plugins/cordova-plugin-prepflow-backup/src/android/PrepFlowBackup.java
           test -f platforms/android/app/src/main/assets/www/cordova_plugins.js
           grep -q "PrepFlowBackup" platforms/android/app/src/main/assets/www/cordova_plugins.js
-          grep -q "com.minecade.prepflow.backup.PrepFlowBackup" platforms/android/app/src/main/res/xml/config.xml || true
+          grep -q "com.minecade.prepflow.backup.PrepFlowBackup" platforms/android/app/src/main/res/xml/config.xml
 
           cordova build android --debug
 

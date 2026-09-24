@@ -3,7 +3,6 @@ package com.minecade.prepflow.backup;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
-import android.provider.Settings;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +10,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
-import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 
 public class PrepFlowBackup extends CordovaPlugin {
@@ -48,7 +46,6 @@ public class PrepFlowBackup extends CordovaPlugin {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.setType("application/json");
             cordova.getActivity().startActivityForResult(intent, REQUEST_OPEN);
             return true;
         }
