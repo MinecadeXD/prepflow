@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin id="cordova-plugin-prepflow-backup" version="1.0.0"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+  <name>PrepFlow Backup</name>
+  <description>Native Android Storage Access Framework backup and restore for PrepFlow.</description>
+  <js-module src="www/prepflow-backup.js" name="PrepFlowBackup">
+    <clobbers target="PrepFlowBackup" />
+  </js-module>
+  <platform name="android">
+    <config-file parent="/*" target="AndroidManifest.xml" />
+    <source-file src="src/android/PrepFlowBackup.java" target-dir="src/com/minecade/prepflow/backup" />
+  </platform>
+</plugin>
