@@ -27,7 +27,7 @@ jobs:
       - name: Build PrepFlow APK via Cordova
         run: |
           cordova create build_app com.minecade.prepflow PrepFlow
-          
+
           cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
           cp logo.png build_app/logo.png
@@ -41,10 +41,8 @@ jobs:
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
               <content src="index.html" />
-              
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
-
               <platform name="android">
                   <icon src="logo.png" />
                   <preference name="AndroidWindowSplashScreenAnimatedIcon" value="logo.png" />
@@ -55,9 +53,9 @@ jobs:
 
           cordova plugin remove cordova-plugin-splashscreen || true
 
-          # Create the small native Cordova plugin inside this single build workflow.
-          mkdir -p build_app/cordova-plugin-save-backup/www build_app/cordova-plugin-save-backup/src/android
-          cat << 'PLUGIN' > build_app/cordova-plugin-save-backup/plugin.xml
+          # Create the native save-backup plugin in this build directory.
+          mkdir -p cordova-plugin-save-backup/www cordova-plugin-save-backup/src/android
+          cat << 'PLUGIN' > cordova-plugin-save-backup/plugin.xml
           <?xml version="1.0" encoding="utf-8"?>
           <plugin id="com.minecade.prepflow.savebackup" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
               <name>PrepFlow Save Backup</name>
@@ -69,7 +67,7 @@ jobs:
               </platform>
           </plugin>
           PLUGIN
-          cat << 'PLUGINJS' > build_app/cordova-plugin-save-backup/www/saveBackup.js
+          cat << 'PLUGINJS' > cordova-plugin-save-backup/www/saveBackup.js
           var exec = require('cordova/exec');
           module.exports = {
             create: function (json, fileName, success, error) {
@@ -77,7 +75,7 @@ jobs:
             }
           };
           PLUGINJS
-          cat << 'JAVA' > build_app/cordova-plugin-save-backup/src/android/SaveBackup.java
+          cat << 'JAVA' > cordova-plugin-save-backup/src/android/SaveBackup.java
           package com.minecade.prepflow.savebackup;
 
           import android.app.Activity;
@@ -134,6 +132,7 @@ jobs:
               }
           }
           JAVA
+
           cordova plugin add ./cordova-plugin-save-backup
           cordova platform add android
           cordova build android --debug
