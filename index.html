@@ -598,9 +598,7 @@
         const { filename, blob, json } = this.buildBackupFile();
         const file = new File([blob], filename, { type: 'application/json' });
 
-        // Web Share with files is the preferred Android path. It opens the
-        // native Android share sheet; the exact destination UI is provided
-        // by Android and the selected target (Files, Drive, etc.).
+        // 1. Prefer the browser/WebView Web Share API when available.
         try {
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             await navigator.share({
@@ -611,19 +609,64 @@
             return;
           }
         } catch (err) {
-          // Abort/cancel is not a failure requiring a second save operation.
           if (err && err.name === 'AbortError') return;
-          console.warn('Web Share backup failed; using Cordova File fallback.', err);
+          console.warn('Web Share backup failed.', err);
         }
 
-        await this.exportBackupWithCordovaFile(blob, filename, json);
+        // 2. In the Cordova APK, use the native Android share sheet.
+        // This works even when the Android WebView does not expose Web Share.
+        if (window.plugins && window.plugins.socialsharing && window.cordova && window.resolveLocalFileSystemURL && window.cordova.file) {
+          await this.exportBackupWithCordovaShare(blob, filename);
+          return;
+        }
+
+        // 3. Last-resort Cordova file save.
+        await this.exportBackupWithCordovaFile(blob, filename);
       }
 
-      exportBackupWithCordovaFile(blob, filename, json) {
+      exportBackupWithCordovaShare(blob, filename) {
+        return new Promise((resolve, reject) => {
+          const targetDir = window.cordova.file.cacheDirectory || window.cordova.file.dataDirectory;
+
+          window.resolveLocalFileSystemURL(targetDir, directoryEntry => {
+            directoryEntry.getFile(filename, { create: true, exclusive: false }, fileEntry => {
+              fileEntry.createWriter(writer => {
+                writer.onwriteend = () => {
+                  window.plugins.socialsharing.shareWithOptions({
+                    message: 'PrepFlow study tracker backup',
+                    subject: 'PrepFlow Backup',
+                    files: [fileEntry.nativeURL],
+                    chooserTitle: 'Export PrepFlow Backup'
+                  }, () => {
+                    resolve();
+                  }, error => {
+                    console.error('Native backup sharing failed', error);
+                    alert('Could not open the Android share sheet.');
+                    reject(error);
+                  });
+                };
+
+                writer.onerror = error => {
+                  console.error('Backup file write failed', error);
+                  reject(error);
+                };
+
+                writer.write(blob);
+              }, reject);
+            }, reject);
+          }, reject);
+        }).catch(error => {
+          console.error('Cordova native share failed', error);
+          // Fall back to the regular file save if native sharing fails.
+          return this.exportBackupWithCordovaFile(blob, filename);
+        });
+      }
+
+      exportBackupWithCordovaFile(blob, filename) {
         return new Promise((resolve, reject) => {
           if (!window.cordova || !window.resolveLocalFileSystemURL || !window.cordova.file) {
-            alert('Backup sharing is not supported on this device. Please use Android WebView with Web Share support or the Cordova APK build.');
-            reject(new Error('Cordova File API unavailable'));
+            alert('Backup export is not supported on this device.');
+            resolve();
             return;
           }
 
