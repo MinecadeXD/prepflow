@@ -53,12 +53,27 @@ jobs:
 
           cordova plugin remove cordova-plugin-splashscreen || true
 
-          # Create the native save-backup plugin in this build directory.
           mkdir -p cordova-plugin-save-backup/www cordova-plugin-save-backup/src/android
+
+          cat << 'PKG' > cordova-plugin-save-backup/package.json
+          {
+            "name": "cordova-plugin-save-backup",
+            "version": "1.0.0",
+            "description": "Native Android Save As support for PrepFlow backups",
+            "cordova": {
+              "id": "com.minecade.prepflow.savebackup",
+              "platforms": ["android"]
+            },
+            "keywords": ["cordova", "backup", "android"],
+            "license": "MIT"
+          }
+          PKG
+
           cat << 'PLUGIN' > cordova-plugin-save-backup/plugin.xml
           <?xml version="1.0" encoding="utf-8"?>
           <plugin id="com.minecade.prepflow.savebackup" version="1.0.0" xmlns="http://apache.org/cordova/ns/plugins/1.0">
               <name>PrepFlow Save Backup</name>
+              <description>Native Android Save As support for PrepFlow backups.</description>
               <js-module src="www/saveBackup.js" name="SaveBackup">
                   <clobbers target="cordova.plugins.saveBackup" />
               </js-module>
@@ -67,6 +82,7 @@ jobs:
               </platform>
           </plugin>
           PLUGIN
+
           cat << 'PLUGINJS' > cordova-plugin-save-backup/www/saveBackup.js
           var exec = require('cordova/exec');
           module.exports = {
@@ -75,6 +91,7 @@ jobs:
             }
           };
           PLUGINJS
+
           cat << 'JAVA' > cordova-plugin-save-backup/src/android/SaveBackup.java
           package com.minecade.prepflow.savebackup;
 
@@ -98,6 +115,7 @@ jobs:
                   pendingCallback = callbackContext;
                   pendingJson = args.getString(0);
                   String fileName = args.optString(1, "prepflow_backup.json");
+
                   Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                   intent.addCategory(Intent.CATEGORY_OPENABLE);
                   intent.setType("application/json");
@@ -109,14 +127,17 @@ jobs:
               @Override
               public void onActivityResult(int requestCode, int resultCode, Intent intent) {
                   if (requestCode != CREATE_DOCUMENT_REQUEST || pendingCallback == null) return;
+
                   CallbackContext callback = pendingCallback;
                   String json = pendingJson;
                   pendingCallback = null;
                   pendingJson = null;
+
                   if (resultCode != Activity.RESULT_OK || intent == null || intent.getData() == null) {
                       callback.error("Save cancelled");
                       return;
                   }
+
                   Uri uri = intent.getData();
                   try (OutputStream output = cordova.getActivity().getContentResolver().openOutputStream(uri)) {
                       if (output == null) {
