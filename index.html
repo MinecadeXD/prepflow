@@ -153,30 +153,11 @@
           <span class="hidden sm:inline">Manage Chapters</span>
         </button>
 
-        <div class="relative group">
-          <button onclick="app.importData()" aria-label="Import Backup" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="transform: rotate(180deg);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m0 0l-5-5m5 5l5-5"/></svg>
-          </button>
-          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
-            Import Backup
-          </div>
-        </div>
-        
-        <div class="relative group">
-          <button onclick="app.exportData()" aria-label="Export Backup" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m4 4l-4-4m4 4V4"/></svg>
-          </button>
-          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
-            Export Backup
-          </div>
-        </div>
+
       </div>
     </div>
   </header>
-
-  <input type="file" id="backup-file-input" accept=".json,application/json" class="hidden" onchange="app.importBackup(event)">
-
-  <!-- Main Container -->
+<!-- Main Container -->
   <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
 
     <!-- DASHBOARD VIEW -->
@@ -988,96 +969,6 @@
         } else if (this.currentView === 'dashboard') {
           this.renderDashboard();
         }
-      }
-
-      exportData() {
-        const backup = {
-          app: 'PrepFlow',
-          version: '1.1.0',
-          exportedAt: new Date().toISOString(),
-          data: this.data
-        };
-
-        const jsonStr = JSON.stringify(backup, null, 2);
-        const fileName = `PrepFlow_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-
-        if (window.AndroidPrepFlow && typeof window.AndroidPrepFlow.exportBackup === 'function') {
-          window.AndroidPrepFlow.exportBackup(jsonStr, fileName);
-          return;
-        }
-
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-      }
-
-      importData() {
-        if (window.AndroidPrepFlow && typeof window.AndroidPrepFlow.importBackup === 'function') {
-          window.AndroidPrepFlow.importBackup();
-          return;
-        }
-
-        const input = document.getElementById('backup-file-input');
-        if (input) {
-          input.value = '';
-          input.click();
-        }
-      }
-
-      importBackup(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = () => this.restoreBackup(reader.result);
-        reader.onerror = () => alert('Could not read the backup file.');
-        reader.readAsText(file);
-      }
-
-      restoreBackup(json) {
-        let backup;
-        try {
-          backup = typeof json === 'string' ? JSON.parse(json) : json;
-        } catch (e) {
-          alert('Invalid PrepFlow backup file.');
-          return;
-        }
-
-        const importedData = backup && backup.data ? backup.data : backup;
-
-        if (
-          !importedData ||
-          typeof importedData !== 'object' ||
-          Array.isArray(importedData) ||
-          !SUBJECTS.every(subject => Array.isArray(importedData[subject.id]))
-        ) {
-          alert('Invalid PrepFlow backup file.');
-          return;
-        }
-
-        const confirmed = confirm(
-          'Import this backup?\\n\\nYour current PrepFlow data will be replaced by the data in this backup.'
-        );
-        if (!confirmed) return;
-
-        this.data = importedData;
-        this.saveData();
-        this.currentView = 'dashboard';
-        this.currentSubjectId = null;
-        this.currentChapterId = null;
-
-        document.getElementById('view-dashboard').classList.remove('hidden');
-        document.getElementById('view-subject').classList.add('hidden');
-        document.getElementById('view-chapter').classList.add('hidden');
-        this.renderDashboard();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        this.showToast('Backup imported successfully!', 'info');
       }
     }
 
