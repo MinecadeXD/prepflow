@@ -148,9 +148,9 @@
       </div>
       
       <div class="flex items-center space-x-2">
-        <button onclick="app.exportBackup()" class="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl transition-all flex items-center space-x-2 shadow-sm" title="Export all saved progress as a JSON backup">
+        <button onclick="app.exportBackup()" class="text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white px-3.5 py-2 rounded-xl transition-all flex items-center space-x-2 shadow-sm" title="Export all saved progress as a JSON file">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
-          <span class="hidden sm:inline">Export Backup</span>
+          <span class="hidden sm:inline">Export File</span>
         </button>
         <button onclick="app.triggerBackupImport()" class="text-xs font-semibold bg-darksubCard hover:bg-slate-800 text-slate-200 border border-darkborder px-3.5 py-2 rounded-xl transition-all flex items-center space-x-2 shadow-sm" title="Restore progress from a JSON backup">
           <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v10m0 0l-4-4m4 4l4-4M5 20h14"/></svg>
@@ -554,39 +554,14 @@
 
 
       /* ------------------------------------------------------------------
-       * Backup / Restore
+       * Data export / restore
        * ------------------------------------------------------------------ */
-      getBackupPayload() {
-        return {
-          format: 'prepflow-backup',
-          version: 1,
-          exportedAt: new Date().toISOString(),
-          storageKey: STORAGE_KEY,
-          data: this.data
-        };
-      }
-
-      isValidBackupPayload(payload) {
-        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
-        if (payload.format !== 'prepflow-backup') return false;
-        if (payload.version !== 1) return false;
-        if (!payload.data || typeof payload.data !== 'object' || Array.isArray(payload.data)) return false;
-
-        const subjectIds = new Set(SUBJECTS.map(s => s.id));
-        for (const [subjectId, chapters] of Object.entries(payload.data)) {
-          if (!subjectIds.has(subjectId) || !Array.isArray(chapters)) return false;
-          for (const chapter of chapters) {
-            if (!chapter || typeof chapter !== 'object' || Array.isArray(chapter)) return false;
-            if (typeof chapter.id !== 'string' || typeof chapter.name !== 'string') return false;
-          }
-        }
-        return true;
-      }
-
       buildBackupFile() {
-        const json = JSON.stringify(this.getBackupPayload(), null, 2);
+        // Export the actual saved data as a normal JSON file.
+        // No special backup wrapper is required for the exported file.
+        const json = JSON.stringify(this.data, null, 2);
         const date = new Date().toISOString().slice(0, 10);
-        const filename = `backup_${date}.json`;
+        const filename = `prepflow_${date}.json`;
         return {
           filename,
           blob: new Blob([json], { type: 'application/json' }),
@@ -596,36 +571,20 @@
 
       async exportBackup() {
         const { filename, blob } = this.buildBackupFile();
-        const file = new File([blob], filename, { type: 'application/json' });
 
-        // 1. Prefer the browser/WebView Web Share API when available.
-        try {
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: 'PrepFlow Backup',
-              text: 'PrepFlow study tracker backup',
-              files: [file]
-            });
-            return;
-          }
-        } catch (err) {
-          if (err && err.name === 'AbortError') return;
-          console.warn('Web Share backup failed.', err);
-        }
-
-        // 2. Cordova APK: use the native Android share sheet.
-        // Pass the backup as a data URI so this does not depend on
-        // cordova-plugin-file paths or Android storage permissions.
-        if (window.plugins && window.plugins.socialsharing) {
+        // Cordova APK: create a real file, then share that real file.
+        if (window.cordova && window.resolveLocalFileSystemURL && window.cordova.file && window.plugins && window.plugins.socialsharing) {
           try {
-            await this.exportBackupWithNativeShare(blob, filename);
+            await this.exportRealFileWithNativeShare(blob, filename);
             return;
           } catch (err) {
-            console.error('Native backup sharing failed.', err);
+            console.error('Native file export failed.', err);
+            alert('Could not create the export file. Please try again.');
+            return;
           }
         }
 
-        // 3. Browser fallback: download the JSON directly.
+        // Browser fallback: download the JSON as a normal file.
         try {
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -636,67 +595,65 @@
           link.click();
           link.remove();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-          return;
         } catch (err) {
-          console.error('Backup download fallback failed.', err);
+          console.error('File download failed.', err);
+          alert('Could not download the export file.');
         }
-
-        alert('Backup export is not supported on this device.');
       }
 
-      exportBackupWithNativeShare(blob, filename) {
+      exportRealFileWithNativeShare(blob, filename) {
         return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-
-          reader.onerror = () => reject(reader.error || new Error('Could not read backup data.'));
-          reader.onloadend = () => {
-            const dataUri = reader.result;
-
-            window.plugins.socialsharing.shareWithOptions({
-              message: 'PrepFlow study tracker backup',
-              subject: filename,
-              files: [dataUri],
-              chooserTitle: 'Export PrepFlow Backup'
-            }, () => {
-              resolve();
-            }, error => {
-              reject(error || new Error('Android share sheet failed.'));
-            });
-          };
-
-          reader.readAsDataURL(blob);
-        });
-      }
-
-
-      exportBackupWithCordovaFile(blob, filename) {
-        return new Promise((resolve, reject) => {
-          if (!window.cordova || !window.resolveLocalFileSystemURL || !window.cordova.file) {
-            alert('Backup export is not supported on this device.');
-            resolve();
+          const targetDir = window.cordova.file.externalDataDirectory || window.cordova.file.dataDirectory;
+          if (!targetDir) {
+            reject(new Error('Cordova file storage is unavailable.'));
             return;
           }
 
-          const targetDir = window.cordova.file.externalDataDirectory || window.cordova.file.dataDirectory;
           window.resolveLocalFileSystemURL(targetDir, directoryEntry => {
             directoryEntry.getFile(filename, { create: true, exclusive: false }, fileEntry => {
               fileEntry.createWriter(writer => {
+                writer.onerror = error => reject(error || new Error('Could not write export file.'));
                 writer.onwriteend = () => {
-                  alert('Backup saved to the app storage folder:\\n' + fileEntry.nativeURL);
-                  resolve();
-                };
-                writer.onerror = error => {
-                  console.error('Cordova File write failed', error);
-                  alert('Could not save the backup file.');
-                  reject(error);
+                  const fileUrl = fileEntry.nativeURL || fileEntry.toURL();
+                  if (!fileUrl) {
+                    reject(new Error('Export file path is unavailable.'));
+                    return;
+                  }
+
+                  window.plugins.socialsharing.shareWithOptions({
+                    message: 'PrepFlow study tracker data',
+                    subject: filename,
+                    files: [fileUrl],
+                    chooserTitle: 'Export PrepFlow File'
+                  }, () => {
+                    resolve();
+                  }, error => {
+                    reject(error || new Error('Android share sheet failed.'));
+                  });
                 };
                 writer.write(blob);
               }, reject);
             }, reject);
           }, reject);
-        }).catch(error => {
-          console.error('Backup fallback failed', error);
         });
+      }
+
+      isValidBackupPayload(payload) {
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+
+        if (payload.format === 'prepflow-backup' && payload.version === 1 && payload.data && typeof payload.data === 'object' && !Array.isArray(payload.data)) {
+          payload = payload.data;
+        }
+
+        const subjectIds = new Set(SUBJECTS.map(s => s.id));
+        for (const [subjectId, chapters] of Object.entries(payload)) {
+          if (!subjectIds.has(subjectId) || !Array.isArray(chapters)) return false;
+          for (const chapter of chapters) {
+            if (!chapter || typeof chapter !== 'object' || Array.isArray(chapter)) return false;
+            if (typeof chapter.id !== 'string' || typeof chapter.name !== 'string') return false;
+          }
+        }
+        return true;
       }
 
       triggerBackupImport() {
@@ -713,7 +670,7 @@
 
         const looksLikeJson = file.type === 'application/json' || /\.json$/i.test(file.name || '');
         if (!looksLikeJson) {
-          alert('Invalid backup file. Please select a .json PrepFlow backup.');
+          alert('Please select a .json PrepFlow data file.');
           input.value = '';
           return;
         }
@@ -721,31 +678,32 @@
         const reader = new FileReader();
         reader.onload = () => {
           try {
-            const payload = JSON.parse(String(reader.result || ''));
-            if (!this.isValidBackupPayload(payload)) {
-              throw new Error('Backup structure is invalid.');
+            const parsed = JSON.parse(String(reader.result || ''));
+            if (!this.isValidBackupPayload(parsed)) {
+              throw new Error('File structure is invalid.');
             }
 
+            const data = parsed.format === 'prepflow-backup' ? parsed.data : parsed;
             const restoredData = this.getDefaultData();
             SUBJECTS.forEach(subject => {
-              const chapters = payload.data[subject.id];
+              const chapters = data[subject.id];
               if (Array.isArray(chapters)) {
                 restoredData[subject.id] = chapters;
               }
             });
 
             localStorage.setItem(STORAGE_KEY, JSON.stringify(restoredData));
-            alert('Backup restored successfully. The app will now reload.');
+            alert('PrepFlow data imported successfully. The app will now reload.');
             window.location.reload();
           } catch (error) {
-            console.error('Backup import failed', error);
-            alert('Could not restore this backup. The JSON may be corrupt or it is not a valid PrepFlow backup.');
+            console.error('Data import failed', error);
+            alert('Could not import this JSON file. The file may be corrupt or not a valid PrepFlow data file.');
           } finally {
             input.value = '';
           }
         };
         reader.onerror = () => {
-          alert('Could not read the selected backup file.');
+          alert('Could not read the selected JSON file.');
           input.value = '';
         };
         reader.readAsText(file);
