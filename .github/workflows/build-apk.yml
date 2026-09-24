@@ -60,20 +60,21 @@ jobs:
           import android.net.Uri;
           import android.webkit.JavascriptInterface;
           import android.webkit.WebView;
+          import java.io.ByteArrayOutputStream;
+          import java.io.InputStream;
           import java.io.OutputStream;
           import java.nio.charset.StandardCharsets;
           import org.apache.cordova.CordovaActivity;
 
           public class MainActivity extends CordovaActivity {
               private static final int CREATE_BACKUP_REQUEST = 48127;
+              private static final int OPEN_BACKUP_REQUEST = 48128;
               private String pendingBackupJson;
 
               @Override
               public void onCreate(android.os.Bundle savedInstanceState) {
                   super.onCreate(savedInstanceState);
 
-                  // Register after Cordova has attached the WebView. Never touch
-                  // appView during the critical Activity startup path.
                   getWindow().getDecorView().post(() -> {
                       if (appView == null || appView.getEngine() == null) return;
                       WebView webView = (WebView) appView.getEngine().getView();
@@ -84,36 +85,81 @@ jobs:
               }
 
               private void notifyWeb(String message, boolean error) {
-                  if (appView == null) return;
+                  if (appView == null || appView.getEngine() == null) return;
                   WebView webView = (WebView) appView.getEngine().getView();
+                  if (webView == null) return;
                   String safe = message.replace("\\", "\\\\").replace("'", "\\'");
                   String type = error ? "error" : "info";
                   webView.post(() -> webView.evaluateJavascript(
                       "if(typeof app!=='undefined'&&app){app.showToast('" + safe + "','" + type + "');}", null));
               }
 
+              private void notifyWebImport(String json) {
+                  if (appView == null || appView.getEngine() == null) return;
+                  WebView webView = (WebView) appView.getEngine().getView();
+                  if (webView == null) return;
+
+                  String safeJson = json
+                      .replace("\\", "\\\\")
+                      .replace("'", "\\'")
+                      .replace("\n", "\\n")
+                      .replace("\r", "\\r")
+                      .replace("</", "<\\/");
+                  webView.post(() -> webView.evaluateJavascript(
+                      "if(typeof app!=='undefined'&&app){app.restoreBackup('" + safeJson + "');}", null));
+              }
+
+              private String readUriText(Uri uri) throws Exception {
+                  try (InputStream input = getContentResolver().openInputStream(uri);
+                       ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                      if (input == null) throw new IllegalStateException("Could not open selected file");
+                      byte[] buffer = new byte[8192];
+                      int count;
+                      while ((count = input.read(buffer)) != -1) {
+                          output.write(buffer, 0, count);
+                      }
+                      return output.toString(StandardCharsets.UTF_8.name());
+                  }
+              }
+
               @Override
               protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                   super.onActivityResult(requestCode, resultCode, data);
-                  if (requestCode != CREATE_BACKUP_REQUEST) return;
 
-                  if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || pendingBackupJson == null) {
-                      pendingBackupJson = null;
-                      notifyWeb("Backup export cancelled.", false);
+                  if (requestCode == CREATE_BACKUP_REQUEST) {
+                      if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || pendingBackupJson == null) {
+                          pendingBackupJson = null;
+                          notifyWeb("Backup export cancelled.", false);
+                          return;
+                      }
+
+                      try (OutputStream output = getContentResolver().openOutputStream(data.getData())) {
+                          if (output == null) throw new IllegalStateException("Could not open selected file");
+                          output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
+                          output.flush();
+                          notifyWeb("Backup saved successfully!", false);
+                      } catch (Exception error) {
+                          error.printStackTrace();
+                          notifyWeb("Failed to export backup.", true);
+                      } finally {
+                          pendingBackupJson = null;
+                      }
                       return;
                   }
 
-                  Uri uri = data.getData();
-                  try (OutputStream output = getContentResolver().openOutputStream(uri)) {
-                      if (output == null) throw new IllegalStateException("Could not open selected file");
-                      output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
-                      output.flush();
-                      notifyWeb("Backup saved successfully!", false);
-                  } catch (Exception error) {
-                      error.printStackTrace();
-                      notifyWeb("Failed to export backup.", true);
-                  } finally {
-                      pendingBackupJson = null;
+                  if (requestCode == OPEN_BACKUP_REQUEST) {
+                      if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) {
+                          notifyWeb("Backup import cancelled.", false);
+                          return;
+                      }
+
+                      try {
+                          String json = readUriText(data.getData());
+                          notifyWebImport(json);
+                      } catch (Exception error) {
+                          error.printStackTrace();
+                          notifyWeb("Failed to read backup file.", true);
+                      }
                   }
               }
 
@@ -129,6 +175,17 @@ jobs:
                           intent.setType("application/json");
                           intent.putExtra(Intent.EXTRA_TITLE, filename);
                           startActivityForResult(intent, CREATE_BACKUP_REQUEST);
+                      });
+                  }
+
+                  @JavascriptInterface
+                  public void importBackup() {
+                      runOnUiThread(() -> {
+                          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                          intent.addCategory(Intent.CATEGORY_OPENABLE);
+                          intent.setType("application/json");
+                          intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
+                          startActivityForResult(intent, OPEN_BACKUP_REQUEST);
                       });
                   }
               }
