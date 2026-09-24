@@ -50,9 +50,6 @@ jobs:
               </platform>
           </widget>
           CFG
-
-          cordova plugin remove cordova-plugin-splashscreen || true
-
           mkdir -p cordova-plugin-save-backup/www cordova-plugin-save-backup/src/android
 
           cat << 'PKG' > cordova-plugin-save-backup/package.json
@@ -88,6 +85,9 @@ jobs:
           module.exports = {
             create: function (json, fileName, success, error) {
               exec(success || function () {}, error || function () {}, 'SaveBackup', 'create', [json, fileName]);
+            },
+            open: function (success, error) {
+              exec(success || function () {}, error || function () {}, 'SaveBackup', 'open', []);
             }
           };
           PLUGINJS
@@ -98,7 +98,10 @@ jobs:
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
+          import java.io.InputStream;
           import java.io.OutputStream;
+          import java.io.ByteArrayOutputStream;
+          import java.nio.charset.StandardCharsets;
           import org.apache.cordova.CallbackContext;
           import org.apache.cordova.CordovaPlugin;
           import org.json.JSONArray;
@@ -106,45 +109,88 @@ jobs:
 
           public class SaveBackup extends CordovaPlugin {
               private static final int CREATE_DOCUMENT_REQUEST = 48127;
+              private static final int OPEN_DOCUMENT_REQUEST = 48128;
               private CallbackContext pendingCallback;
               private String pendingJson;
+              private boolean pendingOpen;
 
               @Override
               public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-                  if (!"create".equals(action)) return false;
-                  pendingCallback = callbackContext;
-                  pendingJson = args.getString(0);
-                  String fileName = args.optString(1, "prepflow_backup.json");
+                  if ("create".equals(action)) {
+                      pendingCallback = callbackContext;
+                      pendingJson = args.getString(0);
+                      pendingOpen = false;
+                      String fileName = args.optString(1, "prepflow_backup.json");
 
-                  Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                  intent.addCategory(Intent.CATEGORY_OPENABLE);
-                  intent.setType("application/json");
-                  intent.putExtra(Intent.EXTRA_TITLE, fileName);
-                  cordova.getActivity().startActivityForResult(intent, CREATE_DOCUMENT_REQUEST);
-                  return true;
+                      Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                      intent.addCategory(Intent.CATEGORY_OPENABLE);
+                      intent.setType("application/json");
+                      intent.putExtra(Intent.EXTRA_TITLE, fileName);
+                      cordova.getActivity().startActivityForResult(intent, CREATE_DOCUMENT_REQUEST);
+                      return true;
+                  }
+
+                  if ("open".equals(action)) {
+                      pendingCallback = callbackContext;
+                      pendingJson = null;
+                      pendingOpen = true;
+
+                      Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                      intent.addCategory(Intent.CATEGORY_OPENABLE);
+                      intent.setType("application/json");
+                      cordova.getActivity().startActivityForResult(intent, OPEN_DOCUMENT_REQUEST);
+                      return true;
+                  }
+
+                  return false;
               }
 
               @Override
               public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-                  if (requestCode != CREATE_DOCUMENT_REQUEST || pendingCallback == null) return;
+                  if (pendingCallback == null) return;
+                  if (requestCode != CREATE_DOCUMENT_REQUEST && requestCode != OPEN_DOCUMENT_REQUEST) return;
 
                   CallbackContext callback = pendingCallback;
                   String json = pendingJson;
+                  boolean opening = pendingOpen;
                   pendingCallback = null;
                   pendingJson = null;
+                  pendingOpen = false;
 
                   if (resultCode != Activity.RESULT_OK || intent == null || intent.getData() == null) {
-                      callback.error("Save cancelled");
+                      callback.error(opening ? "Open cancelled" : "Save cancelled");
                       return;
                   }
 
                   Uri uri = intent.getData();
+
+                  if (opening) {
+                      try (InputStream input = cordova.getActivity().getContentResolver().openInputStream(uri)) {
+                          if (input == null) {
+                              callback.error("Could not open selected backup");
+                              return;
+                          }
+
+                          ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                          byte[] data = new byte[8192];
+                          int count;
+                          while ((count = input.read(data)) != -1) {
+                              buffer.write(data, 0, count);
+                          }
+
+                          callback.success(buffer.toString(StandardCharsets.UTF_8.name()));
+                      } catch (Exception e) {
+                          callback.error("Could not read backup: " + e.getMessage());
+                      }
+                      return;
+                  }
+
                   try (OutputStream output = cordova.getActivity().getContentResolver().openOutputStream(uri)) {
                       if (output == null) {
                           callback.error("Could not open selected save location");
                           return;
                       }
-                      output.write(json.getBytes("UTF-8"));
+                      output.write(json.getBytes(StandardCharsets.UTF_8));
                       output.flush();
                       callback.success("Backup saved");
                   } catch (Exception e) {
