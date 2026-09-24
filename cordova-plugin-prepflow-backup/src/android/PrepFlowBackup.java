@@ -46,6 +46,7 @@ public class PrepFlowBackup extends CordovaPlugin {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.setType("application/json");
             cordova.getActivity().startActivityForResult(intent, REQUEST_OPEN);
             return true;
         }

@@ -4,16 +4,13 @@
         xmlns:android="http://schemas.android.com/apk/res/android">
   <name>PrepFlow Backup</name>
   <description>Native Android Storage Access Framework backup and restore for PrepFlow.</description>
-
   <js-module src="www/prepflow-backup.js" name="PrepFlowBackup">
     <clobbers target="PrepFlowBackup" />
   </js-module>
-
+  <feature name="PrepFlowBackup">
+    <param name="android-package" value="com.minecade.prepflow.backup.PrepFlowBackup" />
+  </feature>
   <platform name="android">
-    <feature name="PrepFlowBackup">
-      <param name="android-package" value="com.minecade.prepflow.backup.PrepFlowBackup" />
-    </feature>
-    <source-file src="src/android/PrepFlowBackup.java"
-                 target-dir="src/com/minecade/prepflow/backup" />
+    <source-file src="src/android/PrepFlowBackup.java" target-dir="src/com/minecade/prepflow/backup" />
   </platform>
 </plugin>

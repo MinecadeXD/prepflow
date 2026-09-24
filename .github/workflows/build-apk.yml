@@ -51,9 +51,11 @@ jobs:
           </widget>
           CFG
 
-          # Register the local backup plugin before generating the Android platform.
-          cordova plugin add ../cordova-plugin-prepflow-backup
+          # Create the Android platform first so the local native plugin
+          # installs into an existing platform instead of triggering an
+          # implicit platform fetch during plugin installation.
           cordova platform add android
+          cordova plugin add ../cordova-plugin-prepflow-backup
 
           # Verify both halves of the native bridge are packaged.
           test -f plugins/cordova-plugin-prepflow-backup/www/prepflow-backup.js
