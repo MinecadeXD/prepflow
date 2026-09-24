@@ -66,17 +66,13 @@ jobs:
           Path("prepflow-build.html").write_text(html, encoding="utf-8")
           PY
 
-          ./node_modules/.bin/tailwindcss -c tailwind.config.cjs -i prepflow-build.html -o /tmp/prepflow-tailwind.css --content prepflow-build.html
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path("prepflow-build.html").read_text(encoding="utf-8")
-          css = Path("/tmp/prepflow-tailwind.css").read_text(encoding="utf-8")
-          Path("build_app_placeholder").write_text("", encoding="utf-8")
-          html = html.replace('<link rel="stylesheet" href="tailwind.css">', '<link rel="stylesheet" href="tailwind.css">')
-          Path("/tmp/prepflow-index.html").write_text(html, encoding="utf-8")
-          Path("/tmp/prepflow-tailwind.css").write_text(css, encoding="utf-8")
-          PY
+          cat << 'CSS' > /tmp/tailwind-input.css
+          @tailwind base;
+          @tailwind components;
+          @tailwind utilities;
+          CSS
+          ./node_modules/.bin/tailwindcss -c tailwind.config.cjs -i /tmp/tailwind-input.css -o /tmp/prepflow-tailwind.css --content prepflow-build.html
+          cp prepflow-build.html /tmp/prepflow-index.html
 
           cordova create build_app com.minecade.prepflow PrepFlow
           cp /tmp/prepflow-index.html build_app/www/index.html
