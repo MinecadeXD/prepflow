@@ -154,6 +154,15 @@
         </button>
         
         <div class="relative group">
+          <button onclick="app.importBackup()" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v5a3 3 0 003 3h10a3 3 0 003-3v-5m-4-4l-4-4m0 0L8 8m4-4v12"/></svg>
+          </button>
+          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
+            Import Data Backup
+          </div>
+        </div>
+
+        <div class="relative group">
           <button onclick="app.exportData()" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           </button>
@@ -494,6 +503,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Hidden backup file picker. Android WebView opens the system file picker for this input. -->
+  <input id="backup-file-input" type="file" accept=".json,application/json" class="hidden" onchange="app.handleBackupFile(event)">
 
   <!-- APPLICATION LOGIC -->
   <script>
@@ -979,15 +991,114 @@
         }
       }
 
-      exportData() {
+      importBackup() {
+        const input = document.getElementById('backup-file-input');
+        if (!input) return;
+        input.value = '';
+        input.click();
+      }
+
+      async handleBackupFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const imported = JSON.parse(text);
+
+          if (!imported || typeof imported !== 'object' || Array.isArray(imported)) {
+            throw new Error('Backup must contain a valid tracker data object.');
+          }
+
+          const validSubjectIds = SUBJECTS.map(s => s.id);
+          const hasKnownSubject = validSubjectIds.some(id => Array.isArray(imported[id]));
+          if (!hasKnownSubject) {
+            throw new Error('This file does not look like a PrepFlow backup.');
+          }
+
+          const confirmed = window.confirm(
+            'Import this backup? Your current PrepFlow data will be replaced by the data in this file.'
+          );
+          if (!confirmed) return;
+
+          const restored = this.getDefaultData();
+
+          validSubjectIds.forEach(subjectId => {
+            if (Array.isArray(imported[subjectId])) {
+              restored[subjectId] = imported[subjectId].map((chapter, index) => ({
+                id: chapter && chapter.id ? String(chapter.id) : `ch_${Date.now()}_${subjectId}_${index}`,
+                name: chapter && typeof chapter.name === 'string' ? chapter.name : `Chapter ${index + 1}`,
+                priority: ['none', 'high', 'medium', 'low'].includes(chapter?.priority) ? chapter.priority : 'none',
+                lecturesCompleted: Math.max(0, Number(chapter?.lecturesCompleted) || 0),
+                lecturesTotal: Math.max(0, Number(chapter?.lecturesTotal) || 0),
+                textbook: !!chapter?.textbook,
+                practice: !!chapter?.practice,
+                formulaSheet: !!chapter?.formulaSheet,
+                cetMcq: !!chapter?.cetMcq,
+                testsCompleted: Math.max(0, Number(chapter?.testsCompleted) || 0),
+                testsTotal: Math.max(0, Number(chapter?.testsTotal) || 0),
+                revisionCount: Math.max(0, Number(chapter?.revisionCount) || 0),
+                notes: typeof chapter?.notes === 'string' ? chapter.notes : '',
+                lastStudiedDate: chapter?.lastStudiedDate || null,
+                lastRevisedDate: chapter?.lastRevisedDate || null
+              }));
+            }
+          });
+
+          this.data = restored;
+          this.saveData();
+          this.currentView = 'dashboard';
+          this.currentSubjectId = null;
+          this.currentChapterId = null;
+          this.subjectFilter = 'all';
+          this.navigateTo('dashboard');
+
+          window.alert('Backup imported successfully.');
+        } catch (error) {
+          console.error('Failed to import backup', error);
+          window.alert('Import failed. Please select a valid PrepFlow JSON backup file.');
+        } finally {
+          event.target.value = '';
+        }
+      }
+
+      async exportData() {
         const jsonStr = JSON.stringify(this.data, null, 2);
+        const fileName = `mht_cet_study_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
         const blob = new Blob([jsonStr], { type: 'application/json' });
+        const file = new File([blob], fileName, { type: 'application/json' });
+
+        // Android WebView may not handle an <a download> Blob URL like a normal browser.
+        // Prefer the native Android share sheet when Web Share API with files is available.
+        try {
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'PrepFlow Data Backup',
+              text: 'PrepFlow study tracker backup',
+              files: [file]
+            });
+            return;
+          }
+        } catch (error) {
+          // User cancellation is harmless; fall through to the normal download method.
+          if (error && error.name === 'AbortError') return;
+          console.warn('Native backup sharing unavailable:', error);
+        }
+
+        // Browser fallback and WebView configurations that support download links.
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `mht_cet_study_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
         a.click();
-        URL.revokeObjectURL(url);
+        setTimeout(() => {
+          a.remove();
+          URL.revokeObjectURL(url);
+        }, 1000);
+
+        // If the WebView blocks downloads, the share-sheet path above is the supported APK route.
       }
     }
 
