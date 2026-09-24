@@ -26,7 +26,7 @@ jobs:
 
       - name: Build PrepFlow APK via Cordova
         run: |
-          cordova create build_app com.prepflow.tracker PrepFlow
+          cordova create build_app com.minecade.prepflow PrepFlow
           
           cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
@@ -36,7 +36,7 @@ jobs:
 
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.prepflow.tracker" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+          <widget id="com.minecade.prepflow" version="1.1.0" android-versionCode="10100" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
               <name>PrepFlow</name>
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
