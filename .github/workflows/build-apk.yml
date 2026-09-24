@@ -50,6 +50,11 @@ jobs:
               </platform>
           </widget>
           CFG
+          # Install the Cordova File plugin before adding the Android platform.
+          # This provides the native filesystem fallback used when Web Share with files
+          # is unavailable in the Android WebView.
+          cordova plugin add cordova-plugin-file
+
           cordova platform add android
 
           cordova build android --debug
