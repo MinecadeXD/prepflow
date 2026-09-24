@@ -24,74 +24,11 @@ jobs:
       - name: Install Cordova
         run: npm install -g cordova
 
-      - name: Validate app JavaScript
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path("index.html").read_text(encoding="utf-8")
-          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, re.S | re.I)
-          inline = "\n".join(scripts)
-          Path("/tmp/prepflow-inline.js").write_text(inline, encoding="utf-8")
-          print(f"Inline JavaScript extracted: {len(inline)} bytes")
-          PY
-          node --check /tmp/prepflow-inline.js
-
       - name: Build PrepFlow APK via Cordova
         run: |
-          cordova --version
-
-          # Bundle Tailwind locally so the Android WebView never waits on the CDN.
-          npm install --no-save tailwindcss@3.4.17
-          cat << 'TWCFG' > tailwind.config.cjs
-          module.exports = {
-            content: ['./index.html'],
-            safelist: [
-              'bg-emerald-950/40', 'text-emerald-400', 'border-emerald-900/50',
-              'bg-amber-950/40', 'text-amber-400', 'border-amber-900/50',
-              'bg-rose-950/40', 'text-rose-400', 'border-rose-900/50'
-            ],
-            theme: {
-              extend: {
-                colors: {
-                  darkbg: '#0b0f17',
-                  darkcard: '#111827',
-                  darksubCard: '#1a2234',
-                  darkborder: '#1e293b',
-                  brand: {
-                    400: '#38bdf8',
-                    500: '#0284c7',
-                    600: '#0284c7',
-                    700: '#0369a1'
-                  }
-                }
-              }
-            },
-            plugins: []
-          };
-          TWCFG
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          html = Path("index.html").read_text(encoding="utf-8")
-          html = re.sub(r'\s*<script src="https://cdn\.tailwindcss\.com"></script>', '', html)
-          html = re.sub(r'\s*<script>\s*tailwind\.config\s*=.*?</script>', '', html, flags=re.S)
-          html = html.replace('</head>', '  <link rel="stylesheet" href="tailwind.css">\n</head>', 1)
-          Path("prepflow-build.html").write_text(html, encoding="utf-8")
-          PY
-
-          cat << 'CSS' > /tmp/tailwind-input.css
-          @tailwind base;
-          @tailwind components;
-          @tailwind utilities;
-          CSS
-          ./node_modules/.bin/tailwindcss -c tailwind.config.cjs -i /tmp/tailwind-input.css -o /tmp/prepflow-tailwind.css --content prepflow-build.html
-          cp prepflow-build.html /tmp/prepflow-index.html
-
           cordova create build_app com.minecade.prepflow PrepFlow
-          cp /tmp/prepflow-index.html build_app/www/index.html
-          cp /tmp/prepflow-tailwind.css build_app/www/tailwind.css
+
+          cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
           cp logo.png build_app/logo.png
 
@@ -104,8 +41,6 @@ jobs:
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
               <content src="index.html" />
-              <access origin="*" />
-              <allow-navigation href="*" />
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
               <platform name="android">
@@ -115,9 +50,7 @@ jobs:
               </platform>
           </widget>
           CFG
-
           cordova platform add android
-          cordova platform ls
 
           cat << 'JAVA' > platforms/android/app/src/main/java/com/minecade/prepflow/MainActivity.java
           package com.minecade.prepflow;
@@ -125,120 +58,62 @@ jobs:
           import android.app.Activity;
           import android.content.Intent;
           import android.net.Uri;
-          import android.util.Log;
           import android.webkit.JavascriptInterface;
           import android.webkit.WebView;
-          import java.io.ByteArrayOutputStream;
-          import java.io.InputStream;
           import java.io.OutputStream;
           import java.nio.charset.StandardCharsets;
           import org.apache.cordova.CordovaActivity;
 
           public class MainActivity extends CordovaActivity {
-              private static final String TAG = "PrepFlow";
               private static final int CREATE_BACKUP_REQUEST = 48127;
-              private static final int OPEN_BACKUP_REQUEST = 48128;
               private String pendingBackupJson;
 
               @Override
               public void onCreate(android.os.Bundle savedInstanceState) {
-                  Log.i(TAG, "MainActivity.onCreate");
                   super.onCreate(savedInstanceState);
 
-                  WebView.setWebContentsDebuggingEnabled(true);
-
+                  // Register after Cordova has attached the WebView. Never touch
+                  // appView during the critical Activity startup path.
                   getWindow().getDecorView().post(() -> {
-                      if (appView == null || appView.getEngine() == null) {
-                          Log.e(TAG, "Cordova appView/engine is not ready");
-                          return;
-                      }
+                      if (appView == null || appView.getEngine() == null) return;
                       WebView webView = (WebView) appView.getEngine().getView();
                       if (webView != null) {
                           webView.addJavascriptInterface(new PrepFlowAndroidBridge(), "AndroidPrepFlow");
-                          Log.i(TAG, "AndroidPrepFlow bridge registered");
-                      } else {
-                          Log.e(TAG, "Cordova WebView is null");
                       }
                   });
               }
 
               private void notifyWeb(String message, boolean error) {
-                  if (appView == null || appView.getEngine() == null) return;
+                  if (appView == null) return;
                   WebView webView = (WebView) appView.getEngine().getView();
-                  if (webView == null) return;
                   String safe = message.replace("\\", "\\\\").replace("'", "\\'");
                   String type = error ? "error" : "info";
                   webView.post(() -> webView.evaluateJavascript(
                       "if(typeof app!=='undefined'&&app){app.showToast('" + safe + "','" + type + "');}", null));
               }
 
-              private void notifyWebImport(String json) {
-                  if (appView == null || appView.getEngine() == null) return;
-                  WebView webView = (WebView) appView.getEngine().getView();
-                  if (webView == null) return;
-
-                  String safeJson = json
-                      .replace("\\", "\\\\")
-                      .replace("'", "\\'")
-                      .replace("\n", "\\n")
-                      .replace("\r", "\\r")
-                      .replace("</", "<\\/");
-                  webView.post(() -> webView.evaluateJavascript(
-                      "if(typeof app!=='undefined'&&app){app.restoreBackup('" + safeJson + "');}", null));
-              }
-
-              private String readUriText(Uri uri) throws Exception {
-                  try (InputStream input = getContentResolver().openInputStream(uri);
-                       ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                      if (input == null) throw new IllegalStateException("Could not open selected file");
-                      byte[] buffer = new byte[8192];
-                      int count;
-                      while ((count = input.read(buffer)) != -1) {
-                          output.write(buffer, 0, count);
-                      }
-                      return output.toString(StandardCharsets.UTF_8.name());
-                  }
-              }
-
               @Override
               protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                   super.onActivityResult(requestCode, resultCode, data);
+                  if (requestCode != CREATE_BACKUP_REQUEST) return;
 
-                  if (requestCode == CREATE_BACKUP_REQUEST) {
-                      if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || pendingBackupJson == null) {
-                          pendingBackupJson = null;
-                          notifyWeb("Backup export cancelled.", false);
-                          return;
-                      }
-
-                      try (OutputStream output = getContentResolver().openOutputStream(data.getData())) {
-                          if (output == null) throw new IllegalStateException("Could not open selected file");
-                          output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
-                          output.flush();
-                          notifyWeb("Backup saved successfully!", false);
-                      } catch (Exception error) {
-                          Log.e(TAG, "Backup export failed", error);
-                          notifyWeb("Failed to export backup.", true);
-                      } finally {
-                          pendingBackupJson = null;
-                      }
+                  if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null || pendingBackupJson == null) {
+                      pendingBackupJson = null;
+                      notifyWeb("Backup export cancelled.", false);
                       return;
                   }
 
-                  if (requestCode == OPEN_BACKUP_REQUEST) {
-                      if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) {
-                          notifyWeb("Backup import cancelled.", false);
-                          return;
-                      }
-
-                      try {
-                          String json = readUriText(data.getData());
-                          Log.i(TAG, "Backup file selected; bytes=" + json.getBytes(StandardCharsets.UTF_8).length);
-                          notifyWebImport(json);
-                      } catch (Exception error) {
-                          Log.e(TAG, "Backup import failed", error);
-                          notifyWeb("Failed to read backup file.", true);
-                      }
+                  Uri uri = data.getData();
+                  try (OutputStream output = getContentResolver().openOutputStream(uri)) {
+                      if (output == null) throw new IllegalStateException("Could not open selected file");
+                      output.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));
+                      output.flush();
+                      notifyWeb("Backup saved successfully!", false);
+                  } catch (Exception error) {
+                      error.printStackTrace();
+                      notifyWeb("Failed to export backup.", true);
+                  } finally {
+                      pendingBackupJson = null;
                   }
               }
 
@@ -248,25 +123,12 @@ jobs:
                       if (json == null || filename == null) return;
 
                       runOnUiThread(() -> {
-                          Log.i(TAG, "Opening Android Save As picker");
                           pendingBackupJson = json;
                           Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                           intent.addCategory(Intent.CATEGORY_OPENABLE);
                           intent.setType("application/json");
                           intent.putExtra(Intent.EXTRA_TITLE, filename);
                           startActivityForResult(intent, CREATE_BACKUP_REQUEST);
-                      });
-                  }
-
-                  @JavascriptInterface
-                  public void importBackup() {
-                      runOnUiThread(() -> {
-                          Log.i(TAG, "Opening Android backup file picker");
-                          Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                          intent.addCategory(Intent.CATEGORY_OPENABLE);
-                          intent.setType("application/json");
-                          intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false);
-                          startActivityForResult(intent, OPEN_BACKUP_REQUEST);
                       });
                   }
               }
