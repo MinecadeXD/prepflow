@@ -603,9 +603,16 @@
 
       exportRealFileWithNativeShare(blob, filename) {
         return new Promise((resolve, reject) => {
-          const targetDir = window.cordova.file.externalDataDirectory || window.cordova.file.dataDirectory;
+          const fileApi = window.cordova && window.cordova.file;
+          const targetDir = fileApi && (fileApi.externalDataDirectory || fileApi.dataDirectory);
+          const social = window.plugins && window.plugins.socialsharing;
+
           if (!targetDir) {
             reject(new Error('Cordova file storage is unavailable.'));
+            return;
+          }
+          if (!social || typeof social.share !== 'function') {
+            reject(new Error('Native sharing plugin is not ready.'));
             return;
           }
 
@@ -614,27 +621,28 @@
               fileEntry.createWriter(writer => {
                 writer.onerror = error => reject(error || new Error('Could not write export file.'));
                 writer.onwriteend = () => {
-                  const fileUrl = fileEntry.nativeURL || fileEntry.toURL();
+                  // The social sharing plugin accepts a normal local file:// URI.
+                  // Use toURL() rather than nativeURL so the plugin gets the
+                  // Cordova FileEntry URL it expects.
+                  const fileUrl = fileEntry.toURL();
                   if (!fileUrl) {
                     reject(new Error('Export file path is unavailable.'));
                     return;
                   }
 
-                  window.plugins.socialsharing.shareWithOptions({
-                    message: 'PrepFlow study tracker data',
-                    subject: filename,
-                    files: [fileUrl],
-                    chooserTitle: 'Export PrepFlow File'
-                  }, () => {
-                    resolve();
-                  }, error => {
-                    reject(error || new Error('Android share sheet failed.'));
-                  });
+                  social.share(
+                    'PrepFlow study tracker data',
+                    filename,
+                    fileUrl,
+                    null,
+                    () => resolve(),
+                    error => reject(new Error(String(error || 'Android share sheet failed.')))
+                  );
                 };
                 writer.write(blob);
-              }, reject);
-            }, reject);
-          }, reject);
+              }, error => reject(error || new Error('Could not create file writer.')));
+            }, error => reject(error || new Error('Could not create export file.')));
+          }, error => reject(error || new Error('Could not access export folder.')));
         });
       }
 
