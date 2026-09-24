@@ -75,9 +75,9 @@ jobs:
           from pathlib import Path
           import re
           html = Path("index.html").read_text(encoding="utf-8")
-          html = re.sub(r'\s*<script src="https://cdn\\.tailwindcss\\.com"></script>', '', html)
-          html = re.sub(r'\s*<script>\\s*tailwind\\.config\\s*=.*?</script>', '', html, flags=re.S)
-          html = html.replace('</head>', '  <link rel="stylesheet" href="tailwind.css">\\n</head>', 1)
+          html = re.sub(r'\s*<script src="https://cdn\.tailwindcss\.com"></script>', '', html)
+          html = re.sub(r'\s*<script>\s*tailwind\.config\s*=.*?</script>', '', html, flags=re.S)
+          html = html.replace('</head>', '  <link rel="stylesheet" href="tailwind.css">\n</head>', 1)
           Path("prepflow-build.html").write_text(html, encoding="utf-8")
           PY
 
