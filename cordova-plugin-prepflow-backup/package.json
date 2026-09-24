@@ -1,0 +1,20 @@
+{
+  "name": "cordova-plugin-prepflow-backup",
+  "version": "1.0.0",
+  "description": "Native Android Storage Access Framework backup and restore for PrepFlow.",
+  "cordova": {
+    "id": "cordova-plugin-prepflow-backup",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "android",
+    "backup",
+    "restore",
+    "storage-access-framework"
+  ],
+  "author": "Minecade",
+  "license": "MIT"
+}
