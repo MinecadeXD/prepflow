@@ -152,10 +152,10 @@
           <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
           <span class="hidden sm:inline">Manage Chapters</span>
         </button>
-        
+
         <div class="relative group">
           <button onclick="app.importData()" aria-label="Import Backup" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="transform: rotate(180deg);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="transform: rotate(180deg);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m0 0l-5-5m5 5l5-5"/></svg>
           </button>
           <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
             Import Backup
@@ -164,7 +164,7 @@
         
         <div class="relative group">
           <button onclick="app.exportData()" aria-label="Export Backup" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m4 4l-4-4m4 4V4"/></svg>
           </button>
           <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
             Export Backup
@@ -993,7 +993,6 @@
       exportData() {
         const backup = {
           app: 'PrepFlow',
-          backupVersion: 1,
           version: '1.1.0',
           exportedAt: new Date().toISOString(),
           data: this.data
@@ -1037,41 +1036,8 @@
 
         const reader = new FileReader();
         reader.onload = () => this.restoreBackup(reader.result);
-        reader.onerror = () => this.showToast('Could not read the backup file.', 'error');
+        reader.onerror = () => alert('Could not read the backup file.');
         reader.readAsText(file);
-      }
-
-      validateBackup(backup) {
-        if (!backup || typeof backup !== 'object' || Array.isArray(backup)) return null;
-
-        const importedData = backup.app === 'PrepFlow' && backup.data
-          ? backup.data
-          : backup.data && typeof backup.data === 'object'
-            ? backup.data
-            : backup;
-
-        if (
-          !importedData ||
-          typeof importedData !== 'object' ||
-          Array.isArray(importedData) ||
-          !SUBJECTS.every(subject => Array.isArray(importedData[subject.id]))
-        ) {
-          return null;
-        }
-
-        const isValidChapter = chapter => (
-          chapter &&
-          typeof chapter === 'object' &&
-          !Array.isArray(chapter) &&
-          typeof chapter.id === 'string' &&
-          typeof chapter.name === 'string'
-        );
-
-        if (!SUBJECTS.every(subject => importedData[subject.id].every(isValidChapter))) {
-          return null;
-        }
-
-        return importedData;
       }
 
       restoreBackup(json) {
@@ -1079,13 +1045,19 @@
         try {
           backup = typeof json === 'string' ? JSON.parse(json) : json;
         } catch (e) {
-          this.showToast('Invalid PrepFlow backup file.', 'error');
+          alert('Invalid PrepFlow backup file.');
           return;
         }
 
-        const importedData = this.validateBackup(backup);
-        if (!importedData) {
-          this.showToast('Invalid PrepFlow backup file.', 'error');
+        const importedData = backup && backup.data ? backup.data : backup;
+
+        if (
+          !importedData ||
+          typeof importedData !== 'object' ||
+          Array.isArray(importedData) ||
+          !SUBJECTS.every(subject => Array.isArray(importedData[subject.id]))
+        ) {
+          alert('Invalid PrepFlow backup file.');
           return;
         }
 
@@ -1094,7 +1066,7 @@
         );
         if (!confirmed) return;
 
-        this.data = JSON.parse(JSON.stringify(importedData));
+        this.data = importedData;
         this.saveData();
         this.currentView = 'dashboard';
         this.currentSubjectId = null;
