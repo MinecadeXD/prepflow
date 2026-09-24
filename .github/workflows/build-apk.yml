@@ -33,6 +33,7 @@ jobs:
           cp logo.png build_app/logo.png
 
           cd build_app
+          cordova plugin add ../cordova-plugin-prepflow-backup
 
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
