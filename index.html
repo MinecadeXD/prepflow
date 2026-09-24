@@ -451,9 +451,12 @@
 
           <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 pt-2 gap-2">
             <div class="flex items-center space-x-2">
-              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002-2 2z"/></svg>
               <span>Last Studied:</span>
-              <input id="last-studied-input" type="date" onchange="app.setLastStudiedDate(this.value)" class="bg-darksubCard border border-darkborder rounded-lg px-2 py-1 text-xs font-medium text-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none cursor-pointer"> 
+              <span class="relative inline-flex items-center min-w-[74px]">
+                <span id="last-studied-val" class="font-medium text-slate-200 cursor-pointer hover:text-brand-300 transition-colors">Never</span>
+                <input id="last-studied-input" type="date" aria-label="Edit last studied date" onchange="app.setLastStudiedDate(this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"> 
+              </span>
             </div>
             <button onclick="app.touchLastStudied()" class="text-brand-400 hover:text-brand-300 font-semibold text-left sm:text-right flex items-center space-x-1 transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -898,6 +901,7 @@
         document.getElementById('chapter-notes').value = ch.notes || '';
         const lastStudiedInput = document.getElementById('last-studied-input');
         lastStudiedInput.value = this.toDateInputValue(ch.lastStudiedDate);
+        document.getElementById('last-studied-val').textContent = ch.lastStudiedDate || 'Never';
       }
 
       toDateInputValue(dateString) {
@@ -1143,43 +1147,62 @@
 
       async exportData() {
         const jsonStr = JSON.stringify(this.data, null, 2);
-        const fileName = `mht_cet_study_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const file = new File([blob], fileName, { type: 'application/json' });
+        const fileName = `prepflow_backup_${new Date().toISOString().slice(0,10)}.json`;
 
-        // Android WebView may not handle an <a download> Blob URL like a normal browser.
-        // Prefer the native Android share sheet when Web Share API with files is available.
-        try {
-          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              title: 'PrepFlow Data Backup',
-              text: 'PrepFlow study tracker backup',
-              files: [file]
+        // Android Cordova/WebView: write a real JSON file to the app cache,
+        // then open the native Android share sheet so it can be saved to Files/Drive/etc.
+        if (window.cordova && window.resolveLocalFileSystemURL && window.plugins && window.plugins.socialsharing) {
+          try {
+            await new Promise((resolve, reject) => {
+              window.resolveLocalFileSystemURL(
+                cordova.file.cacheDirectory,
+                dirEntry => {
+                  dirEntry.getFile(fileName, { create: true, exclusive: false }, fileEntry => {
+                    fileEntry.createWriter(writer => {
+                      writer.onwriteend = () => {
+                        window.plugins.socialsharing.shareWithOptions(
+                          {
+                            message: 'PrepFlow data backup',
+                            subject: 'PrepFlow Data Backup',
+                            files: [fileEntry.nativeURL]
+                          },
+                          () => resolve(),
+                          error => reject(error || new Error('Share cancelled or unavailable'))
+                        );
+                      };
+                      writer.onerror = error => reject(error);
+                      writer.write(jsonStr);
+                    }, reject);
+                  }, reject);
+                },
+                reject
+              );
             });
             return;
+          } catch (error) {
+            console.warn('Native backup export unavailable:', error);
           }
-        } catch (error) {
-          // User cancellation is harmless; fall through to the normal download method.
-          if (error && error.name === 'AbortError') return;
-          console.warn('Native backup sharing unavailable:', error);
         }
 
-        // Browser fallback and WebView configurations that support download links.
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-          a.remove();
-          URL.revokeObjectURL(url);
-        }, 1000);
-
-        // If the WebView blocks downloads, the share-sheet path above is the supported APK route.
-      }
-    }
+        // Browser fallback.
+        try {
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            a.remove();
+            URL.revokeObjectURL(url);
+          }, 1000);
+        } catch (error) {
+          console.error('Backup export failed:', error);
+          window.alert('Could not export the backup.');
+        }
+      }    }
 
     let app;
     window.addEventListener('DOMContentLoaded', () => {
