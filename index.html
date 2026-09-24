@@ -1149,6 +1149,1193 @@
         const jsonStr = JSON.stringify(this.data, null, 2);
         const fileName = `prepflow_backup_${new Date().toISOString().slice(0,10)}.json`;
 
+        // Android APK/WebView: use Android's native CREATE_DOCUMENT dialog.
+        // This opens the system save screen where the user can choose the
+        // Downloads folder and press Save, just like a normal Android app.
+        if (window.cordova && cordova.plugins && cordova.plugins.saveBackup) {
+          cordova.plugins.saveBackup.create(
+            jsonStr,
+            fileName,
+            () => {},
+            error => {
+              if (error && error !== 'Save cancelled') {
+                console.error('Backup export failed:', error);
+                window.alert('Could not save the backup.');
+              }
+            }
+          );
+          return;
+        }
+
+        // Browser fallback.
+        try {
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            a.remove();
+            URL.revokeObjectURL(url);
+          }, 1000);
+        } catch (error) {
+          console.error('Backup export failed:', error);
+          window.alert('Could not export the backup.');
+        }
+      }E html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>11th Science & MHT-CET Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            darkbg: '#0b0f17',
+            darkcard: '#111827',
+            darksubCard: '#1a2234',
+            darkborder: '#1e293b',
+            brand: {
+              400: '#38bdf8',
+              500: '#0284c7',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0b0f17;
+      color: #f1f5f9;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0b0f17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body class="bg-darkbg text-slate-100 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- SVG Icon Sprite Definitions -->
+  <svg class="hidden">
+    <defs>
+      <!-- Brand Logo -->
+      <g id="icon-app-logo">
+        <path fill="url(#grad-logo)" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        <defs>
+          <linearGradient id="grad-logo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#38bdf8" />
+            <stop offset="100%" stop-color="#0284c7" />
+          </linearGradient>
+        </defs>
+      </g>
+      <!-- Physics -->
+      <g id="icon-physics">
+        <ellipse cx="12" cy="12" rx="9" ry="3.5" fill="none" stroke="#38bdf8" stroke-width="1.8" transform="rotate(30 12 12)" />
+        <ellipse cx="12" cy="12" rx="9" ry="3.5" fill="none" stroke="#38bdf8" stroke-width="1.8" transform="rotate(-30 12 12)" />
+        <circle cx="12" cy="12" r="2.2" fill="#38bdf8" />
+      </g>
+      <!-- Chemistry -->
+      <g id="icon-chemistry">
+        <path fill="none" stroke="#f43f5e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 3h6m-3 0v6.2c0 .3.1.6.3.8l5.8 6.7c.8.9.2 2.3-1 2.3H6.9c-1.2 0-1.8-1.4-1-2.3l5.8-6.7c.2-.2.3-.5.3-.8V3z"/>
+        <circle cx="10" cy="15" r="1" fill="#f43f5e"/>
+        <circle cx="14" cy="17" r="1.2" fill="#f43f5e"/>
+      </g>
+      <!-- Mathematics -->
+      <g id="icon-maths">
+        <path fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M18 4H6l7 8-7 8h12"/>
+      </g>
+      <!-- English -->
+      <g id="icon-english">
+        <path fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+      </g>
+      <!-- CS 1 -->
+      <g id="icon-cs1">
+        <path fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M8 9l-3 3 3 3m8-6l3 3-3 3M13 7l-2 10"/>
+      </g>
+      <!-- CS 2 -->
+      <g id="icon-cs2">
+        <rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="#06b6d4" stroke-width="1.8"/>
+        <path fill="none" stroke="#06b6d4" stroke-width="1.8" stroke-linecap="round" d="M9 2v3m6-2v2M9 19v2m6-2v2M3 9h2m-2 6h2m14-6h2m-2 6h2"/>
+        <circle cx="12" cy="12" r="2" fill="#06b6d4"/>
+      </g>
+      <!-- Status Completed -->
+      <g id="icon-status-completed">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#10b981" stroke-width="2"/>
+        <path fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/>
+      </g>
+      <!-- Status Progress -->
+      <g id="icon-status-progress">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#f59e0b" stroke-width="2"/>
+        <path fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" d="M12 7v5l3 2"/>
+      </g>
+      <!-- Status Unstarted -->
+      <g id="icon-status-unstarted">
+        <circle cx="12" cy="12" r="9" fill="none" stroke="#f43f5e" stroke-width="2"/>
+        <path fill="none" stroke="#f43f5e" stroke-width="2" stroke-linecap="round" d="M12 8v4m0 4h.01"/>
+      </g>
+      <!-- Video -->
+      <g id="icon-video">
+        <rect x="3" y="5" width="13" height="14" rx="2" fill="none" stroke="#38bdf8" stroke-width="1.8"/>
+        <path fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M16 10l5-3v10l-5-3"/>
+      </g>
+      <!-- Target -->
+      <g id="icon-target">
+        <circle cx="12" cy="12" r="8" fill="none" stroke="#e11d48" stroke-width="1.8"/>
+        <circle cx="12" cy="12" r="4" fill="none" stroke="#e11d48" stroke-width="1.8"/>
+        <circle cx="12" cy="12" r="1.5" fill="#e11d48"/>
+      </g>
+      <!-- Clipboard List -->
+      <g id="icon-clipboard">
+        <path fill="none" stroke="#a855f7" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+      </g>
+      <!-- Repeat / Revision -->
+      <g id="icon-revision">
+        <path fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+      </g>
+      <!-- Pencil / Practice -->
+      <g id="icon-pencil">
+        <path fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </g>
+      <!-- Formula Sheet Icon -->
+      <g id="icon-formula">
+        <path fill="none" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+      </g>
+    </defs>
+  </svg>
+  
+    <!-- Header / Navigation -->
+  <header class="bg-darkcard border-b border-darkborder sticky top-0 z-30 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="app.navigateTo('dashboard')">
+        <div class="p-2 bg-gradient-to-br from-brand-500/20 to-brand-700/30 rounded-xl border border-brand-500/30 shadow-inner flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-app-logo"/></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-slate-100 leading-tight text-base sm:text-lg tracking-wide">11th Science & MHT-CET</h1>
+          <p class="text-xs text-slate-400 font-medium">Maharashtra State Board Tracker</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <button onclick="app.openImportModal()" class="text-xs font-semibold bg-darksubCard hover:bg-slate-800 text-slate-200 border border-darkborder px-3.5 py-2 rounded-xl transition-all flex items-center space-x-2 shadow-sm">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          <span class="hidden sm:inline">Manage Chapters</span>
+        </button>
+        
+        <div class="relative group">
+          <button onclick="app.importBackup()" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12v5a3 3 0 003 3h10a3 3 0 003-3v-5m-4-4l-4-4m0 0L8 8m4-4v12"/></svg>
+          </button>
+          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
+            Import Data Backup
+          </div>
+        </div>
+
+        <div class="relative group">
+          <button onclick="app.exportData()" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </button>
+          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
+            Export Data Backup
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
+
+    <!-- DASHBOARD VIEW -->
+    <div id="view-dashboard" class="space-y-6">
+      <!-- High Level Stats -->
+      <div class="bg-darkcard rounded-2xl p-5 border border-darkborder shadow-sm">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center space-x-2">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span>Progress Overview</span>
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="bg-darksubCard p-4 rounded-xl border border-darkborder flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-slate-400 block mb-1">Total Chapters</span>
+              <span id="stat-total-chapters" class="text-2xl font-black text-slate-100">0</span>
+            </div>
+            <svg class="w-8 h-8 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-clipboard"/></svg>
+          </div>
+          <div class="bg-emerald-950/20 p-4 rounded-xl border border-emerald-900/40 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-emerald-400 block mb-1">Completed</span>
+              <span id="stat-completed-chapters" class="text-2xl font-black text-emerald-400">0</span>
+            </div>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-status-completed"/></svg>
+          </div>
+          <div class="bg-amber-950/20 p-4 rounded-xl border border-amber-900/40 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-amber-400 block mb-1">In Progress</span>
+              <span id="stat-progress-chapters" class="text-2xl font-black text-amber-400">0</span>
+            </div>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-status-progress"/></svg>
+          </div>
+          <div class="bg-rose-950/20 p-4 rounded-xl border border-rose-900/40 flex items-center justify-between">
+            <div>
+              <span class="text-xs font-semibold text-rose-400 block mb-1">Not Started</span>
+              <span id="stat-unstarted-chapters" class="text-2xl font-black text-rose-400">0</span>
+            </div>
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-status-unstarted"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Focus Container -->
+      <div id="next-up-container" class="hidden bg-darkcard rounded-2xl p-5 border border-darkborder shadow-sm">
+        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center space-x-2">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          <span>Active Chapters Focus</span>
+        </h2>
+        <div id="next-up-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Subject Cards Grid -->
+      <div>
+        <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center space-x-2">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-english"/></svg>
+          <span>11th Science Subjects</span>
+        </h2>
+        <div id="subject-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+    
+        <!-- SUBJECT VIEW -->
+    <div id="view-subject" class="hidden space-y-5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <button onclick="app.navigateTo('dashboard')" class="p-2 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-colors text-slate-400 hover:text-slate-100">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          </button>
+          <div class="flex items-center space-x-3">
+            <div id="subject-icon-header" class="p-2.5 bg-darksubCard rounded-xl border border-darkborder">
+              <!-- Icon dynamically inserted -->
+            </div>
+            <div>
+              <h2 id="subject-title" class="text-xl font-bold text-slate-100">Subject Name</h2>
+              <p id="subject-subtitle" class="text-xs text-slate-400 font-medium">0 of 0 Chapters completed</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex items-center space-x-1.5 bg-darkcard p-1 rounded-xl border border-darkborder text-xs font-semibold self-start sm:self-auto">
+          <button onclick="app.setSubjectFilter('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg transition-colors bg-brand-600 text-white">All</button>
+          <button onclick="app.setSubjectFilter('progress')" id="filter-btn-progress" class="px-3 py-1.5 rounded-lg transition-colors text-slate-400 hover:text-slate-200">In Progress</button>
+          <button onclick="app.setSubjectFilter('unstarted')" id="filter-btn-unstarted" class="px-3 py-1.5 rounded-lg transition-colors text-slate-400 hover:text-slate-200">Unstarted</button>
+        </div>
+      </div>
+
+      <!-- Chapters List -->
+      <div id="subject-chapters-list" class="bg-darkcard rounded-2xl border border-darkborder divide-y divide-darkborder/60 overflow-hidden shadow-sm">
+        <!-- Dynamically Populated -->
+      </div>
+    </div>
+
+    <!-- CHAPTER DETAIL VIEW -->
+    <div id="view-chapter" class="hidden max-w-2xl mx-auto space-y-6">
+      <div class="flex items-center justify-between">
+        <button onclick="app.navigateTo('subject', app.currentSubjectId)" class="p-2 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-colors text-slate-400 hover:text-slate-100 flex items-center space-x-1.5 text-sm font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          <span>Back to Subject</span>
+        </button>
+        <div id="chapter-badge" class="px-3 py-1 text-xs font-bold rounded-full border flex items-center space-x-1.5">
+          <!-- Icon & status string -->
+        </div>
+      </div>
+
+      <!-- Chapter Header Card -->
+      <div class="bg-darkcard rounded-2xl p-5 border border-darkborder shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="text-xs font-bold text-brand-400 uppercase tracking-wider flex items-center space-x-1.5" id="chapter-subject-tag">
+            <!-- Subject name -->
+          </div>
+          <!-- Priority Tag Input -->
+          <div class="flex items-center space-x-1.5">
+            <span class="text-[11px] text-slate-400 font-semibold">Priority:</span>
+            <select id="select-priority" onchange="app.updateCurrentChapter()" class="bg-darksubCard border border-darkborder text-xs text-slate-200 rounded-lg px-2 py-1 font-semibold focus:outline-none">
+              <option value="none">None</option>
+              <option value="high">🔥 High</option>
+              <option value="medium">⚡ Medium</option>
+              <option value="low">🌱 Low</option>
+            </select>
+          </div>
+        </div>
+
+        <h2 id="chapter-name" class="text-xl font-extrabold text-slate-100">Chapter Title</h2>
+        
+        <div>
+          <div class="flex justify-between items-center text-xs font-semibold mb-1.5">
+            <span class="text-slate-400">Total Progress</span>
+            <span id="chapter-progress-text" class="text-slate-200 font-bold">0%</span>
+          </div>
+          <div class="w-full bg-darkbg rounded-full h-2.5 overflow-hidden border border-darkborder">
+            <div id="chapter-progress-bar" class="bg-brand-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tracking Items -->
+      <div class="bg-darkcard rounded-2xl border border-darkborder p-5 shadow-sm space-y-6">
+        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-2">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-clipboard"/></svg>
+          <span>Chapter Requirements</span>
+        </h3>
+
+        <div class="space-y-4">
+
+          <!-- 1. Lectures -->
+          <div class="p-4 bg-darksubCard rounded-xl border border-darkborder space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-video"/></svg>
+                <span>Lectures</span>
+              </label>
+              <span id="lecture-calc-pct" class="text-xs font-mono font-medium text-slate-400">0%</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Completed:</span>
+                <input type="number" min="0" id="input-lectures-completed" onchange="app.updateCurrentChapter()" class="w-16 p-1.5 text-center bg-darkbg border border-darkborder rounded-lg text-sm font-semibold text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <span class="text-slate-500 font-bold">/</span>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Total:</span>
+                <input type="number" min="0" id="input-lectures-total" onchange="app.updateCurrentChapter()" class="w-16 p-1.5 text-center bg-darkbg border border-darkborder rounded-lg text-sm font-semibold text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Textbook Toggle -->
+          <label class="p-4 bg-darksubCard hover:bg-slate-800/60 rounded-xl border border-darkborder flex items-center justify-between cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <input type="checkbox" id="check-textbook" onchange="app.updateCurrentChapter()" class="w-5 h-5 rounded bg-darkbg border-darkborder text-brand-500 focus:ring-brand-500 cursor-pointer">
+              <span class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-english"/></svg>
+                <span>Textbook Reading</span>
+              </span>
+            </div>
+            <span id="textbook-status-label" class="text-xs font-bold text-slate-500">Not Completed</span>
+          </label>
+
+          <!-- 3. Practice Toggle -->
+          <label class="p-4 bg-darksubCard hover:bg-slate-800/60 rounded-xl border border-darkborder flex items-center justify-between cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <input type="checkbox" id="check-practice" onchange="app.updateCurrentChapter()" class="w-5 h-5 rounded bg-darkbg border-darkborder text-brand-500 focus:ring-brand-500 cursor-pointer">
+              <span class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-pencil"/></svg>
+                <span>Textbook Practice / Exercise</span>
+              </span>
+            </div>
+            <span id="practice-status-label" class="text-xs font-bold text-slate-500">Not Completed</span>
+          </label>
+
+          <!-- 4. CET MCQ Toggle -->
+          <label class="p-4 bg-darksubCard hover:bg-slate-800/60 rounded-xl border border-darkborder flex items-center justify-between cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <input type="checkbox" id="check-cetmcq" onchange="app.updateCurrentChapter()" class="w-5 h-5 rounded bg-darkbg border-darkborder text-brand-500 focus:ring-brand-500 cursor-pointer">
+              <span class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-target"/></svg>
+                <span>MHT-CET MCQs</span>
+              </span>
+            </div>
+            <span id="cetmcq-status-label" class="text-xs font-bold text-slate-500">Not Completed</span>
+          </label>
+
+          <!-- 5. Test Counter -->
+          <div class="p-4 bg-darksubCard rounded-xl border border-darkborder space-y-2">
+            <div class="flex justify-between items-center">
+              <label class="text-sm font-semibold text-slate-200 flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-clipboard"/></svg>
+                <span>Tests</span>
+              </label>
+              <span id="test-calc-pct" class="text-xs font-mono font-medium text-slate-400">0%</span>
+            </div>
+            <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Completed:</span>
+                <input type="number" min="0" id="input-tests-completed" onchange="app.updateCurrentChapter()" class="w-16 p-1.5 text-center bg-darkbg border border-darkborder rounded-lg text-sm font-semibold text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <span class="text-slate-500 font-bold">/</span>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-slate-400">Total:</span>
+                <input type="number" min="0" id="input-tests-total" onchange="app.updateCurrentChapter()" class="w-16 p-1.5 text-center bg-darkbg border border-darkborder rounded-lg text-sm font-semibold text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+            </div>
+          </div>
+          
+                    <!-- 6. Multi-Revision Counter -->
+          <div class="p-4 bg-darksubCard rounded-xl border border-darkborder space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-revision"/></svg>
+                <span class="text-sm font-semibold text-slate-200">Revision Cycles Completed</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="app.adjustRevision(-1)" class="w-7 h-7 bg-darkbg border border-darkborder hover:bg-slate-800 rounded-lg text-slate-200 font-bold text-sm transition-colors">-</button>
+                <span id="revision-count-val" class="w-6 text-center text-sm font-bold text-emerald-400 font-mono">0</span>
+                <button onclick="app.adjustRevision(1)" class="w-7 h-7 bg-darkbg border border-darkborder hover:bg-slate-800 rounded-lg text-slate-200 font-bold text-sm transition-colors">+</button>
+              </div>
+            </div>
+            <div id="revision-date-display" class="text-xs text-slate-400 pt-1 border-t border-darkborder/50 hidden">
+              Last revised on: <span id="revision-date-val" class="font-medium text-slate-200">-</span>
+            </div>
+          </div>
+
+          <!-- OPTIONAL ITEMS (DOES NOT AFFECT CHAPTER PROGRESS %) -->
+          <div class="pt-2">
+            <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Optional Resources</div>
+            <label class="p-4 bg-darksubCard/60 hover:bg-slate-800/60 rounded-xl border border-darkborder/60 flex items-center justify-between cursor-pointer transition-colors">
+              <div class="flex items-center space-x-3">
+                <input type="checkbox" id="check-formulasheet" onchange="app.updateCurrentChapter()" class="w-5 h-5 rounded bg-darkbg border-darkborder text-brand-500 focus:ring-brand-500 cursor-pointer">
+                <span class="text-sm font-semibold text-slate-300 flex items-center space-x-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-formula"/></svg>
+                  <span>Formula Sheet / Summary Sheet</span>
+                </span>
+              </div>
+              <span id="formulasheet-status-label" class="text-xs font-bold text-slate-500">Not Completed</span>
+            </label>
+          </div>
+
+        </div>
+
+        <!-- Notes & Timestamps Section -->
+        <div class="pt-4 border-t border-darkborder space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-2">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-pencil"/></svg>
+              <span>Chapter Notes</span>
+            </label>
+            <textarea id="chapter-notes" rows="4" placeholder="Write notes..." onchange="app.updateCurrentChapter()" class="w-full p-3 bg-darksubCard border border-darkborder rounded-xl text-sm text-slate-100 placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:bg-darkbg focus:outline-none transition-all resize-y"></textarea>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 pt-2 gap-2">
+            <div class="flex items-center space-x-2">
+              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002-2 2z"/></svg>
+              <span>Last Studied:</span>
+              <span class="relative inline-flex items-center min-w-[74px]">
+                <span id="last-studied-val" class="font-medium text-slate-200 cursor-pointer hover:text-brand-300 transition-colors">Never</span>
+                <input id="last-studied-input" type="date" aria-label="Edit last studied date" onchange="app.setLastStudiedDate(this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"> 
+              </span>
+            </div>
+            <button onclick="app.touchLastStudied()" class="text-brand-400 hover:text-brand-300 font-semibold text-left sm:text-right flex items-center space-x-1 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Mark Studied Today</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- CHAPTER IMPORT / MANAGEMENT MODAL -->
+  <div id="import-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-darkcard rounded-2xl shadow-2xl border border-darkborder w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="p-4 border-b border-darkborder flex justify-between items-center bg-darksubCard">
+        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
+          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          <span>Manage Subject Chapters</span>
+        </h3>
+        <button onclick="app.closeImportModal()" class="text-slate-400 hover:text-slate-200">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      
+      <div class="p-5 overflow-y-auto space-y-4">
+        <p class="text-xs text-slate-400 leading-relaxed">
+          Select a subject below and paste your exact chapter list (one chapter per line). Do not add any special formatting—just raw chapter names.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Select Subject</label>
+          <select id="modal-subject-select" onchange="app.loadSubjectIntoModal()" class="w-full p-2.5 bg-darksubCard border border-darkborder rounded-xl text-sm font-medium text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Chapters List (One per line)</label>
+          <textarea id="modal-chapters-text" rows="10" placeholder="" class="w-full p-3 bg-darksubCard border border-darkborder rounded-xl text-sm text-slate-100 placeholder-slate-600 font-sans focus:ring-2 focus:ring-brand-500 focus:bg-darkbg focus:outline-none resize-y"></textarea>
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-darkborder bg-darksubCard flex justify-end space-x-2">
+        <button onclick="app.closeImportModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-darkborder rounded-xl transition-colors">Cancel</button>
+        <button onclick="app.saveImportedChapters()" class="px-4 py-2 text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl shadow-md transition-colors">Save Chapters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden backup file picker. Android WebView opens the system file picker for this input. -->
+  <input id="backup-file-input" type="file" accept=".json,application/json" class="hidden" onchange="app.handleBackupFile(event)">
+
+  <!-- APPLICATION LOGIC -->
+  <script>
+    const SUBJECTS = [
+      { id: 'physics', name: 'Physics', icon: '#icon-physics' },
+      { id: 'chemistry', name: 'Chemistry', icon: '#icon-chemistry' },
+      { id: 'maths', name: 'Mathematics', icon: '#icon-maths' },
+      { id: 'english', name: 'English', icon: '#icon-english' },
+      { id: 'cs1', name: 'Computer Science 1', icon: '#icon-cs1' },
+      { id: 'cs2', name: 'Computer Science 2', icon: '#icon-cs2' }
+    ];
+
+    const STORAGE_KEY = 'msc_11th_cet_tracker_data_v3';
+
+    class StudyTracker {
+      constructor() {
+        this.data = this.loadData();
+        this.currentView = 'dashboard';
+        this.currentSubjectId = null;
+        this.currentChapterId = null;
+        this.subjectFilter = 'all';
+        this.navigationHistory = [];
+
+        this.init();
+      }
+
+      init() {
+        this.renderDashboard();
+        this.setupModalSubjects();
+
+        // Handle Android hardware/system back button inside the WebView.
+        // Subject -> Dashboard, Chapter -> Subject, then Dashboard -> exit.
+        window.addEventListener('popstate', () => this.handleBackNavigation());
+      }
+
+      getDefaultData() {
+        const data = {};
+        SUBJECTS.forEach(sub => {
+          data[sub.id] = [];
+        });
+        return data;
+      }
+
+      loadData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            return JSON.parse(raw);
+          }
+        } catch (e) {
+          console.error('Failed to load local storage', e);
+        }
+        return this.getDefaultData();
+      }
+
+      saveData() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+        } catch (e) {
+          console.error('Failed to save to local storage', e);
+        }
+      }
+
+      calculateChapterProgress(ch) {
+        if (!ch) return 0;
+
+        const lecPct = ch.lecturesTotal > 0 
+          ? Math.min(1, Math.max(0, ch.lecturesCompleted / ch.lecturesTotal)) 
+          : 0;
+
+        const testPct = ch.testsTotal > 0 
+          ? Math.min(1, Math.max(0, ch.testsCompleted / ch.testsTotal)) 
+          : 0;
+          
+                  const tbPct = ch.textbook ? 1 : 0;
+        const prPct = ch.practice ? 1 : 0;
+        const cetPct = ch.cetMcq ? 1 : 0;
+        const revPct = (ch.revisionCount && ch.revisionCount > 0) ? 1 : 0;
+
+        // Weight split across the 6 MAIN required criteria (Formula sheet is completely optional)
+        const totalSum = (lecPct + testPct + tbPct + prPct + cetPct + revPct);
+        const overall = Math.round((totalSum / 6) * 100);
+
+        return Math.min(100, Math.max(0, overall));
+      }
+
+      getChapterStatus(ch) {
+        const pct = this.calculateChapterProgress(ch);
+        
+        const isLecDone = ch.lecturesTotal > 0 && ch.lecturesCompleted >= ch.lecturesTotal;
+        const isTestDone = ch.testsTotal > 0 && ch.testsCompleted >= ch.testsTotal;
+        const isAllDone = isLecDone && isTestDone && ch.textbook && ch.practice && ch.cetMcq && (ch.revisionCount > 0);
+
+        if (isAllDone || pct === 100) {
+          return { label: 'Completed', color: 'emerald', iconRef: '#icon-status-completed', code: 'completed' };
+        } else if (pct > 0 || ch.lecturesCompleted > 0 || ch.testsCompleted > 0 || ch.textbook || ch.practice || ch.cetMcq || (ch.revisionCount > 0)) {
+          return { label: 'In Progress', color: 'amber', iconRef: '#icon-status-progress', code: 'progress' };
+        } else {
+          return { label: 'Not Started', color: 'rose', iconRef: '#icon-status-unstarted', code: 'unstarted' };
+        }
+      }
+
+      navigateTo(view, param = null, addToHistory = true) {
+        const nextState = { view, param };
+
+        if (addToHistory) {
+          const currentState = { view: this.currentView, param: this.getCurrentNavigationParam() };
+          const lastState = this.navigationHistory[this.navigationHistory.length - 1];
+
+          if (currentState.view !== view || currentState.param !== param) {
+            if (!lastState || lastState.view !== currentState.view || lastState.param !== currentState.param) {
+              this.navigationHistory.push(currentState);
+            }
+          }
+        }
+
+        this.currentView = view;
+
+        document.getElementById('view-dashboard').classList.add('hidden');
+        document.getElementById('view-subject').classList.add('hidden');
+        document.getElementById('view-chapter').classList.add('hidden');
+
+        if (view === 'dashboard') {
+          this.currentSubjectId = null;
+          this.currentChapterId = null;
+          this.renderDashboard();
+          document.getElementById('view-dashboard').classList.remove('hidden');
+        } else if (view === 'subject') {
+          this.currentSubjectId = param;
+          this.currentChapterId = null;
+          this.renderSubject(param);
+          document.getElementById('view-subject').classList.remove('hidden');
+        } else if (view === 'chapter') {
+          this.currentChapterId = param;
+          this.renderChapterDetail(param);
+          document.getElementById('view-chapter').classList.remove('hidden');
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      getCurrentNavigationParam() {
+        if (this.currentView === 'subject') return this.currentSubjectId;
+        if (this.currentView === 'chapter') return this.currentChapterId;
+        return null;
+      }
+
+      handleBackNavigation() {
+        if (this.navigationHistory.length > 0) {
+          const previous = this.navigationHistory.pop();
+          this.navigateTo(previous.view, previous.param, false);
+          return true;
+        }
+
+        // At the dashboard there is nowhere else to navigate inside the app.
+        // Returning false lets Android perform its normal back behavior (exit).
+        return false;
+      }
+
+      setSubjectFilter(filter) {
+        this.subjectFilter = filter;
+        ['all', 'progress', 'unstarted'].forEach(f => {
+          const btn = document.getElementById(`filter-btn-${f}`);
+          if (f === filter) {
+            btn.className = 'px-3 py-1.5 rounded-lg transition-colors bg-brand-600 text-white';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg transition-colors text-slate-400 hover:text-slate-200';
+          }
+        });
+        if (this.currentSubjectId) {
+          this.renderSubject(this.currentSubjectId);
+        }
+      }
+
+      renderDashboard() {
+        let totalChaptersCount = 0;
+        let completedCount = 0;
+        let progressCount = 0;
+        let unstartedCount = 0;
+
+        const grid = document.getElementById('subject-cards-grid');
+        grid.innerHTML = '';
+
+        const nextUpList = document.getElementById('next-up-list');
+        nextUpList.innerHTML = '';
+        let nextUpItems = [];
+
+        SUBJECTS.forEach(sub => {
+          const chapters = this.data[sub.id] || [];
+          totalChaptersCount += chapters.length;
+
+          let subCompleted = 0;
+          let subProgressSum = 0;
+
+          chapters.forEach(ch => {
+            const status = this.getChapterStatus(ch);
+            const pct = this.calculateChapterProgress(ch);
+
+            if (status.code === 'completed') completedCount++;
+            else if (status.code === 'progress') {
+              progressCount++;
+              nextUpItems.push({ ...ch, subjectName: sub.name, subjectId: sub.id, pct });
+            } else unstartedCount++;
+
+            if (status.code === 'completed') subCompleted++;
+            subProgressSum += pct;
+          });
+
+          const subAvgPct = chapters.length > 0 ? Math.round(subProgressSum / chapters.length) : 0;
+
+          const card = document.createElement('div');
+          card.className = 'bg-darkcard rounded-2xl p-5 border border-darkborder hover:border-slate-700 shadow-sm transition-all cursor-pointer flex flex-col justify-between space-y-4';
+          card.onclick = () => this.navigateTo('subject', sub.id);
+          card.innerHTML = `
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center space-x-2.5">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="${sub.icon}"/></svg>
+                  <h3 class="font-bold text-slate-100 text-base">${sub.name}</h3>
+                </div>
+                <span class="text-xs font-bold text-slate-400 bg-darksubCard border border-darkborder px-2.5 py-1 rounded-full">${chapters.length} Chs</span>
+              </div>
+              <p class="text-xs text-slate-400 font-medium">${subCompleted} of ${chapters.length} Completed</p>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between items-center text-xs font-semibold">
+                <span class="text-slate-400">Progress</span>
+                <span class="text-slate-200">${subAvgPct}%</span>
+              </div>
+              <div class="w-full bg-darkbg rounded-full h-2 overflow-hidden border border-darkborder">
+                <div class="bg-brand-500 h-2 rounded-full transition-all duration-300" style="width: ${subAvgPct}%"></div>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+        document.getElementById('stat-total-chapters').textContent = totalChaptersCount;
+        document.getElementById('stat-completed-chapters').textContent = completedCount;
+        document.getElementById('stat-progress-chapters').textContent = progressCount;
+        document.getElementById('stat-unstarted-chapters').textContent = unstartedCount;
+
+        const nextUpContainer = document.getElementById('next-up-container');
+        if (nextUpItems.length > 0) {
+          nextUpContainer.classList.remove('hidden');
+          nextUpItems.slice(0, 4).forEach(item => {
+            const itemEl = document.createElement('div');
+            itemEl.className = 'p-3 bg-darksubCard hover:bg-slate-800/60 rounded-xl border border-darkborder flex items-center justify-between cursor-pointer transition-colors';
+            itemEl.onclick = () => {
+              this.currentSubjectId = item.subjectId;
+              this.navigateTo('chapter', item.id);
+            };
+            itemEl.innerHTML = `
+              <div class="truncate mr-2">
+                <span class="text-[10px] font-bold text-brand-400 block uppercase tracking-wider">${item.subjectName}</span>
+                <span class="text-xs font-semibold text-slate-200 truncate block">${item.name}</span>
+              </div>
+              <span class="text-xs font-bold text-amber-400 bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-900/50">${item.pct}%</span>
+            `;
+            nextUpList.appendChild(itemEl);
+          });
+        } else {
+          nextUpContainer.classList.add('hidden');
+        }
+      }
+
+      renderSubject(subjectId) {
+        const sub = SUBJECTS.find(s => s.id === subjectId);
+        if (!sub) return;
+
+        document.getElementById('subject-title').textContent = sub.name;
+        document.getElementById('subject-icon-header').innerHTML = `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="${sub.icon}"/></svg>`;
+        
+        let chapters = this.data[subjectId] || [];
+        const completedCount = chapters.filter(c => this.getChapterStatus(c).code === 'completed').length;
+        document.getElementById('subject-subtitle').textContent = `${completedCount} of ${chapters.length} chapters completed`;
+
+        if (this.subjectFilter === 'progress') {
+          chapters = chapters.filter(c => this.getChapterStatus(c).code === 'progress');
+        } else if (this.subjectFilter === 'unstarted') {
+          chapters = chapters.filter(c => this.getChapterStatus(c).code === 'unstarted');
+        }
+
+        const list = document.getElementById('subject-chapters-list');
+        list.innerHTML = '';
+
+        if (chapters.length === 0) {
+          list.innerHTML = `
+            <div class="p-8 text-center space-y-3">
+              <p class="text-sm text-slate-400">No chapters found for this filter.</p>
+            </div>
+          `;
+          return;
+        }
+
+        chapters.forEach((ch, idx) => {
+          const status = this.getChapterStatus(ch);
+          const pct = this.calculateChapterProgress(ch);
+
+          const item = document.createElement('div');
+          item.className = 'p-4 hover:bg-darksubCard transition-colors cursor-pointer flex items-center justify-between group';
+          item.onclick = () => this.navigateTo('chapter', ch.id);
+
+          const indexFormatted = String(idx + 1).padStart(2, '0');
+          
+          let priorityBadge = '';
+          if (ch.priority === 'high') priorityBadge = '🔥';
+          else if (ch.priority === 'medium') priorityBadge = '⚡';
+          else if (ch.priority === 'low') priorityBadge = '🌱';
+
+          item.innerHTML = `
+            <div class="flex items-center space-x-3.5 pr-4 truncate">
+              <span class="text-xs font-mono font-bold text-slate-500 group-hover:text-slate-300">${indexFormatted}</span>
+              <span class="text-sm font-semibold text-slate-200 truncate">${ch.name}</span>
+              ${priorityBadge ? `<span class="text-xs">${priorityBadge}</span>` : ''}
+            </div>
+            <div class="flex items-center space-x-3 flex-shrink-0">
+              <span class="text-xs font-mono font-bold text-slate-300">${pct}%</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="${status.iconRef}"/></svg>
+            </div>
+          `;
+          list.appendChild(item);
+        });
+      }
+
+      renderChapterDetail(chapterId) {
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === chapterId);
+        if (!ch) return;
+
+        const sub = SUBJECTS.find(s => s.id === this.currentSubjectId);
+        document.getElementById('chapter-subject-tag').innerHTML = `
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="${sub ? sub.icon : ''}"/></svg>
+          <span>${sub ? sub.name : ''}</span>
+        `;
+        document.getElementById('chapter-name').textContent = ch.name;
+        document.getElementById('select-priority').value = ch.priority || 'none';
+
+        const pct = this.calculateChapterProgress(ch);
+        const status = this.getChapterStatus(ch);
+
+        document.getElementById('chapter-progress-text').textContent = `${pct}%`;
+        document.getElementById('chapter-progress-bar').style.width = `${pct}%`;
+
+        const badge = document.getElementById('chapter-badge');
+        badge.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="${status.iconRef}"/></svg>
+          <span>${status.label}</span>
+        `;
+        badge.className = `px-3 py-1 text-xs font-bold rounded-full border bg-${status.color}-950/40 text-${status.color}-400 border-${status.color}-900/50 flex items-center space-x-1.5`;
+
+        document.getElementById('input-lectures-completed').value = ch.lecturesCompleted || 0;
+        document.getElementById('input-lectures-total').value = ch.lecturesTotal || 0;
+        const lecPct = ch.lecturesTotal > 0 ? Math.round((ch.lecturesCompleted / ch.lecturesTotal) * 100) : 0;
+        document.getElementById('lecture-calc-pct').textContent = `${lecPct}%`;
+
+        document.getElementById('input-tests-completed').value = ch.testsCompleted || 0;
+        document.getElementById('input-tests-total').value = ch.testsTotal || 0;
+        const testPct = ch.testsTotal > 0 ? Math.round((ch.testsCompleted / ch.testsTotal) * 100) : 0;
+        document.getElementById('test-calc-pct').textContent = `${testPct}%`;
+
+        document.getElementById('check-textbook').checked = !!ch.textbook;
+        document.getElementById('textbook-status-label').textContent = ch.textbook ? 'Completed' : 'Not Completed';
+        document.getElementById('textbook-status-label').className = ch.textbook ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-slate-500';
+
+        document.getElementById('check-practice').checked = !!ch.practice;
+        document.getElementById('practice-status-label').textContent = ch.practice ? 'Completed' : 'Not Completed';
+        document.getElementById('practice-status-label').className = ch.practice ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-slate-500';
+
+        document.getElementById('check-formulasheet').checked = !!ch.formulaSheet;
+        document.getElementById('formulasheet-status-label').textContent = ch.formulaSheet ? 'Completed' : 'Not Completed';
+        document.getElementById('formulasheet-status-label').className = ch.formulaSheet ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-slate-500';
+
+        document.getElementById('check-cetmcq').checked = !!ch.cetMcq;
+        document.getElementById('cetmcq-status-label').textContent = ch.cetMcq ? 'Completed' : 'Not Completed';
+        document.getElementById('cetmcq-status-label').className = ch.cetMcq ? 'text-xs font-bold text-emerald-400' : 'text-xs font-bold text-slate-500';
+
+        document.getElementById('revision-count-val').textContent = ch.revisionCount || 0;
+
+        const revDateBox = document.getElementById('revision-date-display');
+        if (ch.revisionCount > 0 && ch.lastRevisedDate) {
+          revDateBox.classList.remove('hidden');
+          document.getElementById('revision-date-val').textContent = ch.lastRevisedDate;
+        } else {
+          revDateBox.classList.add('hidden');
+        }
+
+        document.getElementById('chapter-notes').value = ch.notes || '';
+        const lastStudiedInput = document.getElementById('last-studied-input');
+        lastStudiedInput.value = this.toDateInputValue(ch.lastStudiedDate);
+        document.getElementById('last-studied-val').textContent = ch.lastStudiedDate || 'Never';
+      }
+
+      toDateInputValue(dateString) {
+        if (!dateString) return '';
+        // Stored dates use the app's display format: DD Mon YYYY.
+        const match = String(dateString).match(/^(\\d{2})\\s+([A-Za-z]{3})\\s+(\\d{4})$/);
+        if (!match) return '';
+        const months = {
+          Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+          Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+        };
+        const month = months[match[2]];
+        return month ? `${match[3]}-${month}-${match[1]}` : '';
+      }
+
+      formatStoredDate(dateValue) {
+        if (!dateValue) return null;
+        const parts = String(dateValue).split('-');
+        if (parts.length !== 3) return null;
+        const [year, month, day] = parts;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthIndex = Number(month) - 1;
+        if (!/^\\d{4}$/.test(year) || !months[monthIndex] || !/^\\d{2}$/.test(day)) return null;
+        return `${day} ${months[monthIndex]} ${year}`;
+      }
+
+      setLastStudiedDate(dateValue) {
+        if (!this.currentSubjectId || !this.currentChapterId) return;
+        const formattedDate = this.formatStoredDate(dateValue);
+        if (dateValue && !formattedDate) return;
+
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === this.currentChapterId);
+        if (!ch) return;
+
+        ch.lastStudiedDate = formattedDate;
+        this.saveData();
+        this.renderChapterDetail(this.currentChapterId);
+      }
+      
+            adjustRevision(delta) {
+        if (!this.currentSubjectId || !this.currentChapterId) return;
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === this.currentChapterId);
+        if (!ch) return;
+
+        let cur = ch.revisionCount || 0;
+        cur = Math.max(0, cur + delta);
+        ch.revisionCount = cur;
+
+        if (delta > 0) {
+          ch.lastRevisedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        this.updateCurrentChapter();
+      }
+
+      updateCurrentChapter() {
+        if (!this.currentSubjectId || !this.currentChapterId) return;
+
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === this.currentChapterId);
+        if (!ch) return;
+
+        ch.priority = document.getElementById('select-priority').value;
+        ch.lecturesCompleted = parseInt(document.getElementById('input-lectures-completed').value, 10) || 0;
+        ch.lecturesTotal = parseInt(document.getElementById('input-lectures-total').value, 10) || 0;
+
+        ch.testsCompleted = parseInt(document.getElementById('input-tests-completed').value, 10) || 0;
+        ch.testsTotal = parseInt(document.getElementById('input-tests-total').value, 10) || 0;
+
+        ch.textbook = document.getElementById('check-textbook').checked;
+        ch.practice = document.getElementById('check-practice').checked;
+        ch.formulaSheet = document.getElementById('check-formulasheet').checked;
+        ch.cetMcq = document.getElementById('check-cetmcq').checked;
+
+        ch.notes = document.getElementById('chapter-notes').value;
+        ch.lastStudiedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        this.saveData();
+        this.renderChapterDetail(this.currentChapterId);
+      }
+
+      touchLastStudied() {
+        if (!this.currentSubjectId || !this.currentChapterId) return;
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === this.currentChapterId);
+        if (ch) {
+          ch.lastStudiedDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+          this.saveData();
+          this.renderChapterDetail(this.currentChapterId);
+        }
+      }
+
+      openImportModal(defaultSubjectId = null) {
+        this.setupModalSubjects();
+        const select = document.getElementById('modal-subject-select');
+        if (defaultSubjectId) {
+          select.value = defaultSubjectId;
+        }
+        this.loadSubjectIntoModal();
+        document.getElementById('import-modal').classList.remove('hidden');
+      }
+
+      closeImportModal() {
+        document.getElementById('import-modal').classList.add('hidden');
+      }
+
+      setupModalSubjects() {
+        const select = document.getElementById('modal-subject-select');
+        select.innerHTML = '';
+        SUBJECTS.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          select.appendChild(opt);
+        });
+      }
+
+      loadSubjectIntoModal() {
+        const subjectId = document.getElementById('modal-subject-select').value;
+        const chapters = this.data[subjectId] || [];
+        document.getElementById('modal-chapters-text').value = chapters.map(c => c.name).join('\n');
+      }
+
+      saveImportedChapters() {
+        const subjectId = document.getElementById('modal-subject-select').value;
+        const rawText = document.getElementById('modal-chapters-text').value;
+
+        const lines = rawText.split('\n')
+          .map(l => l.trim())
+          .filter(l => l.length > 0);
+
+        const existingChapters = this.data[subjectId] || [];
+        const updatedChapters = [];
+
+        lines.forEach((lineName, idx) => {
+          const existing = existingChapters.find(c => c.name.toLowerCase() === lineName.toLowerCase());
+          if (existing) {
+            updatedChapters.push({ ...existing, name: lineName });
+          } else {
+            updatedChapters.push({
+              id: 'ch_' + Date.now() + '_' + idx,
+              name: lineName,
+              priority: 'none',
+              lecturesCompleted: 0,
+              lecturesTotal: 0,
+              textbook: false,
+              practice: false,
+              formulaSheet: false,
+              cetMcq: false,
+              testsCompleted: 0,
+              testsTotal: 0,
+              revisionCount: 0,
+              notes: '',
+              lastStudiedDate: null,
+              lastRevisedDate: null
+            });
+          }
+        });
+
+        this.data[subjectId] = updatedChapters;
+        this.saveData();
+        this.closeImportModal();
+
+        if (this.currentView === 'subject' && this.currentSubjectId === subjectId) {
+          this.renderSubject(subjectId);
+        } else if (this.currentView === 'dashboard') {
+          this.renderDashboard();
+        }
+      }
+
+      importBackup() {
+        const input = document.getElementById('backup-file-input');
+        if (!input) return;
+        input.value = '';
+        input.click();
+      }
+
+      async handleBackupFile(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const imported = JSON.parse(text);
+
+          if (!imported || typeof imported !== 'object' || Array.isArray(imported)) {
+            throw new Error('Backup must contain a valid tracker data object.');
+          }
+
+          const validSubjectIds = SUBJECTS.map(s => s.id);
+          const hasKnownSubject = validSubjectIds.some(id => Array.isArray(imported[id]));
+          if (!hasKnownSubject) {
+            throw new Error('This file does not look like a PrepFlow backup.');
+          }
+
+          const confirmed = window.confirm(
+            'Import this backup? Your current PrepFlow data will be replaced by the data in this file.'
+          );
+          if (!confirmed) return;
+
+          const restored = this.getDefaultData();
+
+          validSubjectIds.forEach(subjectId => {
+            if (Array.isArray(imported[subjectId])) {
+              restored[subjectId] = imported[subjectId].map((chapter, index) => ({
+                id: chapter && chapter.id ? String(chapter.id) : `ch_${Date.now()}_${subjectId}_${index}`,
+                name: chapter && typeof chapter.name === 'string' ? chapter.name : `Chapter ${index + 1}`,
+                priority: ['none', 'high', 'medium', 'low'].includes(chapter?.priority) ? chapter.priority : 'none',
+                lecturesCompleted: Math.max(0, Number(chapter?.lecturesCompleted) || 0),
+                lecturesTotal: Math.max(0, Number(chapter?.lecturesTotal) || 0),
+                textbook: !!chapter?.textbook,
+                practice: !!chapter?.practice,
+                formulaSheet: !!chapter?.formulaSheet,
+                cetMcq: !!chapter?.cetMcq,
+                testsCompleted: Math.max(0, Number(chapter?.testsCompleted) || 0),
+                testsTotal: Math.max(0, Number(chapter?.testsTotal) || 0),
+                revisionCount: Math.max(0, Number(chapter?.revisionCount) || 0),
+                notes: typeof chapter?.notes === 'string' ? chapter.notes : '',
+                lastStudiedDate: chapter?.lastStudiedDate || null,
+                lastRevisedDate: chapter?.lastRevisedDate || null
+              }));
+            }
+          });
+
+          this.data = restored;
+          this.saveData();
+          this.currentView = 'dashboard';
+          this.currentSubjectId = null;
+          this.currentChapterId = null;
+          this.subjectFilter = 'all';
+          this.navigateTo('dashboard');
+
+          window.alert('Backup imported successfully.');
+        } catch (error) {
+          console.error('Failed to import backup', error);
+          window.alert('Import failed. Please select a valid PrepFlow JSON backup file.');
+        } finally {
+          event.target.value = '';
+        }
+      }
+
+      async exportData() {
+        const jsonStr = JSON.stringify(this.data, null, 2);
+        const fileName = `prepflow_backup_${new Date().toISOString().slice(0,10)}.json`;
+
         // Android Cordova/WebView: write a real JSON file to the app cache,
         // then open the native Android share sheet so it can be saved to Files/Drive/etc.
         if (window.cordova && window.resolveLocalFileSystemURL && window.plugins && window.plugins.socialsharing) {
