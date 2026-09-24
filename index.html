@@ -152,15 +152,6 @@
           <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
           <span class="hidden sm:inline">Manage Chapters</span>
         </button>
-        
-        <div class="relative group">
-          <button onclick="app.exportData()" class="p-2 text-slate-400 hover:text-slate-100 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-all">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          </button>
-          <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-slate-900 border border-darkborder text-slate-200 text-[11px] px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap z-40">
-            Export Data Backup
-          </div>
-        </div>
       </div>
     </div>
   </header>
@@ -979,16 +970,6 @@
         }
       }
 
-      exportData() {
-        const jsonStr = JSON.stringify(this.data, null, 2);
-        const blob = new Blob([jsonStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `mht_cet_study_tracker_backup_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
     }
 
     let app;
