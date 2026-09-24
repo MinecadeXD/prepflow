@@ -54,6 +54,7 @@ jobs:
           CFG
 
           cordova plugin add cordova-plugin-file
+          cordova plugin add cordova-plugin-x-socialsharing
           cordova platform add android
 
           test -f www/index.html
