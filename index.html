@@ -450,9 +450,10 @@
           </div>
 
           <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-400 pt-2 gap-2">
-            <div class="flex items-center space-x-1.5">
-              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              <span>Last Studied: <span id="last-studied-val" class="font-medium text-slate-200">Never</span></span>
+            <div class="flex items-center space-x-2">
+              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Last Studied:</span>
+              <input id="last-studied-input" type="date" onchange="app.setLastStudiedDate(this.value)" class="bg-darksubCard border border-darkborder rounded-lg px-2 py-1 text-xs font-medium text-slate-200 focus:ring-2 focus:ring-brand-500 focus:outline-none cursor-pointer"> 
             </div>
             <button onclick="app.touchLastStudied()" class="text-brand-400 hover:text-brand-300 font-semibold text-left sm:text-right flex items-center space-x-1 transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -895,7 +896,46 @@
         }
 
         document.getElementById('chapter-notes').value = ch.notes || '';
-        document.getElementById('last-studied-val').textContent = ch.lastStudiedDate || 'Never';
+        const lastStudiedInput = document.getElementById('last-studied-input');
+        lastStudiedInput.value = this.toDateInputValue(ch.lastStudiedDate);
+      }
+
+      toDateInputValue(dateString) {
+        if (!dateString) return '';
+        // Stored dates use the app's display format: DD Mon YYYY.
+        const match = String(dateString).match(/^(\\d{2})\\s+([A-Za-z]{3})\\s+(\\d{4})$/);
+        if (!match) return '';
+        const months = {
+          Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+          Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
+        };
+        const month = months[match[2]];
+        return month ? `${match[3]}-${month}-${match[1]}` : '';
+      }
+
+      formatStoredDate(dateValue) {
+        if (!dateValue) return null;
+        const parts = String(dateValue).split('-');
+        if (parts.length !== 3) return null;
+        const [year, month, day] = parts;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthIndex = Number(month) - 1;
+        if (!/^\\d{4}$/.test(year) || !months[monthIndex] || !/^\\d{2}$/.test(day)) return null;
+        return `${day} ${months[monthIndex]} ${year}`;
+      }
+
+      setLastStudiedDate(dateValue) {
+        if (!this.currentSubjectId || !this.currentChapterId) return;
+        const formattedDate = this.formatStoredDate(dateValue);
+        if (dateValue && !formattedDate) return;
+
+        const chapters = this.data[this.currentSubjectId] || [];
+        const ch = chapters.find(c => c.id === this.currentChapterId);
+        if (!ch) return;
+
+        ch.lastStudiedDate = formattedDate;
+        this.saveData();
+        this.renderChapterDetail(this.currentChapterId);
       }
       
             adjustRevision(delta) {
