@@ -40,9 +40,47 @@ jobs:
       - name: Build PrepFlow APK via Cordova
         run: |
           cordova --version
-          cordova create build_app com.minecade.prepflow PrepFlow
 
-          cp index.html build_app/www/index.html
+          # Bundle Tailwind locally so the Android WebView never waits on the CDN.
+          npm install --no-save tailwindcss@3.4.17
+          cat << 'TWCFG' > tailwind.config.cjs
+          module.exports = {
+            content: ['./index.html'],
+            safelist: [
+              'bg-emerald-950/40', 'text-emerald-400', 'border-emerald-900/50',
+              'bg-amber-950/40', 'text-amber-400', 'border-amber-900/50',
+              'bg-rose-950/40', 'text-rose-400', 'border-rose-900/50'
+            ],
+            theme: { extend: {} },
+            plugins: []
+          };
+          TWCFG
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("index.html").read_text(encoding="utf-8")
+          html = re.sub(r'\s*<script src="https://cdn\\.tailwindcss\\.com"></script>', '', html)
+          html = re.sub(r'\s*<script>\\s*tailwind\\.config\\s*=.*?</script>', '', html, flags=re.S)
+          html = html.replace('</head>', '  <link rel="stylesheet" href="tailwind.css">\\n</head>', 1)
+          Path("prepflow-build.html").write_text(html, encoding="utf-8")
+          PY
+
+          ./node_modules/.bin/tailwindcss -c tailwind.config.cjs -i prepflow-build.html -o /tmp/prepflow-tailwind.css --content prepflow-build.html
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path("prepflow-build.html").read_text(encoding="utf-8")
+          css = Path("/tmp/prepflow-tailwind.css").read_text(encoding="utf-8")
+          Path("build_app_placeholder").write_text("", encoding="utf-8")
+          html = html.replace('<link rel="stylesheet" href="tailwind.css">', '<link rel="stylesheet" href="tailwind.css">')
+          Path("/tmp/prepflow-index.html").write_text(html, encoding="utf-8")
+          Path("/tmp/prepflow-tailwind.css").write_text(css, encoding="utf-8")
+          PY
+
+          cordova create build_app com.minecade.prepflow PrepFlow
+          cp /tmp/prepflow-index.html build_app/www/index.html
+          cp /tmp/prepflow-tailwind.css build_app/www/tailwind.css
           cp logo.png build_app/www/logo.png
           cp logo.png build_app/logo.png
 
