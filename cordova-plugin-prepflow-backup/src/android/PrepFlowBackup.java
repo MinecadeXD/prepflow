@@ -36,6 +36,10 @@ public class PrepFlowBackup extends CordovaPlugin {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("application/json");
             intent.putExtra(Intent.EXTRA_TITLE, filename);
+            
+            // CRITICAL FIX 1: Register this plugin instance to capture the intent callback result
+            cordova.setActivityResultCallback(this);
+            
             cordova.getActivity().startActivityForResult(intent, REQUEST_CREATE);
             return true;
         }
@@ -47,12 +51,17 @@ public class PrepFlowBackup extends CordovaPlugin {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.setType("application/json");
+            
+            // CRITICAL FIX 2: Register this plugin instance to capture the intent callback result
+            cordova.setActivityResultCallback(this);
+            
             cordova.getActivity().startActivityForResult(intent, REQUEST_OPEN);
             return true;
         }
 
         return false;
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
