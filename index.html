@@ -597,6 +597,7 @@
       constructor() {
         this.data = this.loadData();
         this.currentView = 'dashboard';
+        this.navigationStack = [{ view: 'dashboard', param: null }];
         this.currentSubjectId = null;
         this.currentChapterId = null;
         this.subjectFilter = 'all';
@@ -782,6 +783,16 @@
       }
 
       navigateTo(view, param = null) {
+        if (view === 'dashboard') {
+          this.navigationStack = [{ view: 'dashboard', param: null }];
+        } else {
+          const current = this.navigationStack[this.navigationStack.length - 1];
+          const sameRoute = current && current.view === view && current.param === param;
+          if (!sameRoute) {
+            this.navigationStack.push({ view, param });
+          }
+        }
+
         this.currentView = view;
         
         document.getElementById('view-dashboard').classList.add('hidden');
@@ -805,6 +816,24 @@
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      handleBackButton() {
+        if (document.getElementById('import-modal') && !document.getElementById('import-modal').classList.contains('hidden')) {
+          this.closeImportModal();
+          return;
+        }
+
+        if (this.navigationStack.length > 1) {
+          this.navigationStack.pop();
+          const previous = this.navigationStack[this.navigationStack.length - 1];
+          this.navigateTo(previous.view, previous.param);
+          return;
+        }
+
+        if (window.cordova && navigator.app && typeof navigator.app.exitApp === 'function') {
+          navigator.app.exitApp();
+        }
       }
 
       setSubjectFilter(filter) {
@@ -1177,6 +1206,10 @@
     let app;
     window.addEventListener('DOMContentLoaded', () => {
       app = new StudyTracker();
+
+      document.addEventListener('backbutton', () => {
+        app.handleBackButton();
+      }, false);
     });
   </script>
 </body>
