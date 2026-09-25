@@ -585,6 +585,12 @@
       }
       
       exportBackup() {
+        // 1. Core verification check: ensure Cordova plugin is fully ready
+        if (!window.PrepFlowBackup) {
+          alert('PrepFlow Backup plugin is initializing. Please wait a moment and try again.');
+          return;
+        }
+
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) {
           alert('There is no PrepFlow data to back up yet.');
@@ -596,11 +602,6 @@
           parsed = JSON.parse(raw);
         } catch (e) {
           alert('PrepFlow data could not be read for backup.');
-          return;
-        }
-
-        if (!window.PrepFlowBackup) {
-          alert('Backup is unavailable in this build.');
           return;
         }
 
@@ -628,8 +629,9 @@
       }
 
       importBackup() {
+        // 2. Core verification check: ensure Cordova plugin is fully ready
         if (!window.PrepFlowBackup) {
-          alert('Restore is unavailable in this build.');
+          alert('PrepFlow Restore plugin is initializing. Please wait a moment and try again.');
           return;
         }
 
