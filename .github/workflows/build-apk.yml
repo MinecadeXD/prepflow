@@ -82,7 +82,9 @@ jobs:
           }
           EOF
 
-          npx cordova build android --release --buildConfig=build.json
+          npx cordova build android --release --buildConfig=build.json -- --packageType=apk
+
+          test -f platforms/android/app/build/outputs/apk/release/app-release.apk
 
           rm -f prepflow-release.keystore build.json
 
@@ -91,3 +93,4 @@ jobs:
         with:
           name: PrepFlow-Release-APK
           path: build_app/platforms/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
