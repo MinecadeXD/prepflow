@@ -20,3 +20,5 @@ var PrepFlowBackup = {
   }
 };
 
+// ADD THIS CRITICAL LINE AT THE BOTTOM:
+module.exports = PrepFlowBackup;
