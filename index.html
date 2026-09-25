@@ -131,6 +131,22 @@
       <g id="icon-formula">
         <path fill="none" stroke="#ec4899" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m-6 4h6m-6 4h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
       </g>
+
+      <!-- Settings 01 — Hugeicons -->
+      <g id="icon-settings-01">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M10.5 3.2h3l.55 2.15a7.3 7.3 0 0 1 1.78.74l1.96-1.05 2.12 2.12-1.05 1.96c.3.57.55 1.17.74 1.8l2.16.54v3l-2.16.55a7.3 7.3 0 0 1-.74 1.79l1.05 1.96-2.12 2.12-1.96-1.05a7.3 7.3 0 0 1-1.8.74L13.5 21h-3l-.55-2.16a7.3 7.3 0 0 1-1.79-.74L6.2 19.15l-2.12-2.12 1.05-1.96a7.3 7.3 0 0 1-.74-1.79L2.25 12.73v-3l2.14-.55c.19-.63.44-1.23.74-1.8L4.08 5.42 6.2 3.3l1.96 1.05c.56-.3 1.16-.55 1.79-.74L10.5 3.2Z"/>
+        <circle cx="12" cy="11.23" r="3.05" fill="none" stroke="currentColor" stroke-width="1.8"/>
+      </g>
+      <!-- Version — Pingback LLC / Stash -->
+      <g id="icon-version">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 3.5h9l3 3v14H6a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2Z"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M15 3.5v4h3M8 11h8M8 15h5"/>
+      </g>
+      <!-- Code Branch Outline — Themesberg / Flowbite -->
+      <g id="icon-code-branch-outline">
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M6 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm12-8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/>
+        <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M6 6v4a4 4 0 0 0 4 4h6M6 18v-4a4 4 0 0 1 4-4h6"/>
+      </g>
     </defs>
   </svg>
   
@@ -148,7 +164,7 @@
       </div>
       
       <div class="flex items-center space-x-1.5">
-        <button onclick="app.openSettings()" aria-label="Settings" title="Settings" class="p-2 bg-darksubCard hover:bg-slate-800 text-slate-300 border border-darkborder rounded-xl transition-all shadow-sm">
+        <button onclick="app.openSettings()" aria-label="Settings" title="Settings" class="p-2.5 bg-darksubCard hover:bg-slate-800 text-slate-300 border border-darkborder rounded-xl transition-all shadow-sm">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm7.4 3.5c0-.5-.05-1-.16-1.47l2-1.55-2-3.46-2.39.96a7.6 7.6 0 00-2.54-1.47L14 2.5h-4l-.31 2.51a7.6 7.6 0 00-2.54 1.47l-2.39-.96-2 3.46 2 1.55A7.6 7.6 0 004.6 12c0 .5.05 1 .16 1.47l-2 1.55 2 3.46 2.39-.96a7.6 7.6 0 002.54-1.47L10 21.5h4l.31-2.51a7.6 7.6 0 002.54-1.47l2.39.96-2-3.46-2.39.96A7.6 7.6 0 0019.4 12z"/></svg>
         </button>
       </div>
@@ -237,7 +253,7 @@
       <div class="space-y-3">
         <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">App & Data</h3>
 
-        <button onclick="app.openImportModal()" class="w-full bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center justify-between text-left shadow-sm">
+        <button onclick="app.openImportModal()" class="w-full min-h-[88px] bg-darkcard hover:bg-darksubCard rounded-2xl p-5 border border-darkborder transition-colors flex items-center justify-between text-left shadow-sm">
           <div class="flex items-center space-x-3">
             <div class="p-2.5 bg-brand-500/10 rounded-xl border border-brand-500/20">
               <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -251,7 +267,7 @@
         </button>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button onclick="app.exportBackup()" class="bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center space-x-3 text-left shadow-sm">
+          <button onclick="app.exportBackup()" class="min-h-[100px] bg-darkcard hover:bg-darksubCard rounded-2xl p-5 border border-darkborder transition-colors flex items-center space-x-4 text-left shadow-sm">
             <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
               <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
             </div>
@@ -261,7 +277,7 @@
             </div>
           </button>
 
-          <button onclick="app.importBackup()" class="bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center space-x-3 text-left shadow-sm">
+          <button onclick="app.importBackup()" class="min-h-[100px] bg-darkcard hover:bg-darksubCard rounded-2xl p-5 border border-darkborder transition-colors flex items-center space-x-4 text-left shadow-sm">
             <div class="p-2.5 bg-brand-500/10 rounded-xl border border-brand-500/20">
               <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
             </div>
@@ -276,12 +292,22 @@
       <div class="space-y-3">
         <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">About</h3>
         <div class="bg-darkcard rounded-2xl border border-darkborder overflow-hidden shadow-sm">
-          <div class="p-4 flex items-center justify-between border-b border-darkborder">
-            <span class="text-sm font-semibold text-slate-300">App Version</span>
+          <div class="p-5 flex items-center justify-between border-b border-darkborder">
+            <div class="flex items-center space-x-3">
+              <div class="p-2.5 bg-brand-500/10 rounded-xl border border-brand-500/20">
+                <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-version"/></svg>
+              </div>
+              <span class="text-sm font-semibold text-slate-300">App Version</span>
+            </div>
             <span class="text-sm font-bold text-brand-400">1.1.0</span>
           </div>
-          <div class="p-4 flex items-center justify-between">
-            <span class="text-sm font-semibold text-slate-300">Developed by</span>
+          <div class="p-5 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="p-2.5 bg-slate-500/10 rounded-xl border border-slate-500/20">
+                <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><use href="#icon-code-branch-outline"/></svg>
+              </div>
+              <span class="text-sm font-semibold text-slate-300">Developed by</span>
+            </div>
             <span class="text-sm font-bold text-slate-100">Minecade</span>
           </div>
         </div>
