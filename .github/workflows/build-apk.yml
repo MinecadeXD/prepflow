@@ -21,9 +21,15 @@ jobs:
         with:
           node-version: 20
 
+      # FIX 1: Install Cordova locally into the runner's project workspace 
+      # so it is natively available to npx without path mapping issues.
+      - name: Install Cordova Locally
+        run: npm install cordova
+
       - name: Build PrepFlow APK via Cordova
         run: |
-          cordova create build_app com.minecade.prepflow PrepFlow
+          # FIX 2: Prepend all 'cordova' commands with 'npx'
+          npx cordova create build_app com.minecade.prepflow PrepFlow
 
           cp index.html build_app/www/index.html
           cp logo.png build_app/www/logo.png
@@ -31,7 +37,7 @@ jobs:
 
           cd build_app
 
-          # Fixed config.xml: Added the mandatory Android schema namespace
+          # Standard Android XML Namespace mapping rules
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
           <widget id="com.minecade.prepflow" version="1.1.0" android-versionCode="10100" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://android.com" xmlns:cdv="http://cordova.apache.org/ns/1.0">
@@ -49,23 +55,20 @@ jobs:
           </widget>
           CFG
 
-          # FIX 1: Register your custom local plugin FIRST while the environment is clean
-          cordova plugin add ../cordova-plugin-prepflow-backup
+          # Plugins are registered BEFORE the native platform target is added
+          npx cordova plugin add ../cordova-plugin-prepflow-backup
 
-          # FIX 2: Generate the Android platform shell AFTER the plugin is registered.
-          # This forces Cordova to compile the native mappings and copy the files correctly.
-          cordova platform add android
+          # Platform is compiled AFTER the plugin registration step
+          npx cordova platform add android
 
-          # Verify both halves of the native bridge are properly packaged
+          # Verify structural dependencies exist prior to deployment
           test -f plugins/cordova-plugin-prepflow-backup/www/prepflow-backup.js
           test -f plugins/cordova-plugin-prepflow-backup/src/android/PrepFlowBackup.java
           test -f platforms/android/app/src/main/assets/www/cordova_plugins.js
           grep -q "PrepFlowBackup" platforms/android/app/src/main/assets/www/cordova_plugins.js
-          
-          # This check will pass now because the compilation structure matches
           grep -q "com.minecade.prepflow.backup.PrepFlowBackup" platforms/android/app/src/main/res/xml/config.xml
 
-          cordova build android --debug
+          npx cordova build android --debug
 
 
       - name: Upload APK Artifact
