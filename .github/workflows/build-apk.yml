@@ -21,14 +21,16 @@ jobs:
         with:
           node-version: 20
 
-      # FIX 1: Install Cordova locally into the runner's project workspace 
-      # so it is natively available to npx without path mapping issues.
       - name: Install Cordova Locally
         run: npm install cordova
 
       - name: Build PrepFlow APK via Cordova
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          # FIX 2: Prepend all 'cordova' commands with 'npx'
           npx cordova create build_app com.minecade.prepflow PrepFlow
 
           cp index.html build_app/www/index.html
@@ -37,8 +39,6 @@ jobs:
 
           cd build_app
 
-          # Standard Android XML Namespace mapping rules
-          # CORRECTED VALUE: Change xmlns:android to the official schemas URL
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
           <widget id="com.minecade.prepflow" version="1.17.2" android-versionCode="11702" xmlns="http://w3.org" xmlns:android="http://android.com" xmlns:cdv="http://apache.org">
@@ -56,24 +56,38 @@ jobs:
           </widget>
           CFG
 
-          # Plugins are registered BEFORE the native platform target is added
           npx cordova plugin add ../cordova-plugin-prepflow-backup
-
-          # Platform is compiled AFTER the plugin registration step
           npx cordova platform add android
 
-          # Verify structural dependencies exist prior to deployment
           test -f plugins/cordova-plugin-prepflow-backup/www/prepflow-backup.js
           test -f plugins/cordova-plugin-prepflow-backup/src/android/PrepFlowBackup.java
           test -f platforms/android/app/src/main/assets/www/cordova_plugins.js
           grep -q "PrepFlowBackup" platforms/android/app/src/main/assets/www/cordova_plugins.js
           grep -q "com.minecade.prepflow.backup.PrepFlowBackup" platforms/android/app/src/main/res/xml/config.xml
 
-          npx cordova build android --debug
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > prepflow-release.keystore
+          chmod 600 prepflow-release.keystore
 
+          cat << EOF > build.json
+          {
+            "android": {
+              "release": {
+                "keystore": "prepflow-release.keystore",
+                "storePassword": "$KEYSTORE_PASSWORD",
+                "alias": "$KEY_ALIAS",
+                "password": "$KEY_PASSWORD",
+                "keystoreType": "jks"
+              }
+            }
+          }
+          EOF
+
+          npx cordova build android --release --buildConfig=build.json
+
+          rm -f prepflow-release.keystore build.json
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PrepFlow-APK
-          path: build_app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          name: PrepFlow-Release-APK
+          path: build_app/platforms/android/app/build/outputs/apk/release/app-release.apk
