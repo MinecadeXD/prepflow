@@ -41,7 +41,7 @@ jobs:
           # CORRECTED VALUE: Change xmlns:android to the official schemas URL
           cat << 'CFG' > config.xml
           <?xml version='1.0' encoding='utf-8'?>
-          <widget id="com.minecade.prepflow" version="1.1.0" android-versionCode="10100" xmlns="http://w3.org" xmlns:android="http://android.com" xmlns:cdv="http://apache.org">
+          <widget id="com.minecade.prepflow" version="1.17.2" android-versionCode="11702" xmlns="http://w3.org" xmlns:android="http://android.com" xmlns:cdv="http://apache.org">
               <name>PrepFlow</name>
               <description>11th Science &amp; MHT-CET Tracker</description>
               <author>PrepFlow Team</author>
