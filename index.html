@@ -148,20 +148,8 @@
       </div>
       
       <div class="flex items-center space-x-1.5">
-        <button onclick="app.exportBackup()" aria-label="Export Backup" title="Export Backup" class="text-xs font-semibold bg-darksubCard hover:bg-slate-800 text-slate-200 border border-darkborder px-2.5 sm:px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-sm">
-          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
-          <span class="hidden sm:inline">Export</span>
-        </button>
-        <button onclick="app.importBackup()" aria-label="Import Backup" title="Import Backup" class="text-xs font-semibold bg-darksubCard hover:bg-slate-800 text-slate-200 border border-darkborder px-2.5 sm:px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-sm">
-          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
-          <span class="hidden sm:inline">Import</span>
-        </button>
         <button onclick="app.openSettings()" aria-label="Settings" title="Settings" class="p-2 bg-darksubCard hover:bg-slate-800 text-slate-300 border border-darkborder rounded-xl transition-all shadow-sm">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm7.4 3.5c0-.5-.05-1-.16-1.47l2-1.55-2-3.46-2.39.96a7.6 7.6 0 00-2.54-1.47L14 2.5h-4l-.31 2.51a7.6 7.6 0 00-2.54 1.47l-2.39-.96-2 3.46 2 1.55A7.6 7.6 0 004.6 12c0 .5.05 1 .16 1.47l-2 1.55 2 3.46 2.39-.96a7.6 7.6 0 002.54 1.47L10 21.5h4l.31-2.51a7.6 7.6 0 002.54-1.47l2.39.96 2-3.46-2-1.55c.11-.47.16-.97.16-1.47z"/></svg>
-        </button>
-        <button onclick="app.openImportModal()" aria-label="Manage Chapters" title="Manage Chapters" class="text-xs font-semibold bg-darksubCard hover:bg-slate-800 text-slate-200 border border-darkborder px-2.5 sm:px-3 py-2 rounded-xl transition-all flex items-center space-x-1.5 shadow-sm">
-          <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-          <span class="hidden sm:inline">Manage</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm7.4 3.5c0-.5-.05-1-.16-1.47l2-1.55-2-3.46-2.39.96a7.6 7.6 0 00-2.54-1.47L14 2.5h-4l-.31 2.51a7.6 7.6 0 00-2.54 1.47l-2.39-.96-2 3.46 2 1.55A7.6 7.6 0 004.6 12c0 .5.05 1 .16 1.47l-2 1.55 2 3.46 2.39-.96a7.6 7.6 0 002.54-1.47L10 21.5h4l.31-2.51a7.6 7.6 0 002.54-1.47l2.39.96-2-3.46-2.39.96A7.6 7.6 0 0019.4 12z"/></svg>
         </button>
       </div>
     </div>
@@ -233,7 +221,74 @@
       </div>
     </div>
     
-        <!-- SUBJECT VIEW -->
+    
+    <!-- SETTINGS VIEW -->
+    <div id="view-settings" class="hidden max-w-2xl mx-auto space-y-6">
+      <div class="flex items-center space-x-3">
+        <button onclick="app.closeSettings()" aria-label="Back to Dashboard" class="p-2 hover:bg-darksubCard border border-transparent hover:border-darkborder rounded-xl transition-colors text-slate-400 hover:text-slate-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </button>
+        <div>
+          <h2 class="text-xl font-bold text-slate-100">Settings</h2>
+          <p class="text-xs text-slate-400 font-medium">Manage your PrepFlow app</p>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">App & Data</h3>
+
+        <button onclick="app.openImportModal()" class="w-full bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center justify-between text-left shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="p-2.5 bg-brand-500/10 rounded-xl border border-brand-500/20">
+              <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            </div>
+            <div>
+              <span class="block text-sm font-bold text-slate-100">Manage Chapters</span>
+              <span class="block text-xs text-slate-400 mt-0.5">Add, remove, or reorder chapters for each subject</span>
+            </div>
+          </div>
+          <svg class="w-5 h-5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+        </button>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button onclick="app.exportBackup()" class="bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center space-x-3 text-left shadow-sm">
+            <div class="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+            </div>
+            <div>
+              <span class="block text-sm font-bold text-slate-100">Export Backup</span>
+              <span class="block text-xs text-slate-400 mt-0.5">Save your PrepFlow data</span>
+            </div>
+          </button>
+
+          <button onclick="app.importBackup()" class="bg-darkcard hover:bg-darksubCard rounded-2xl p-4 border border-darkborder transition-colors flex items-center space-x-3 text-left shadow-sm">
+            <div class="p-2.5 bg-brand-500/10 rounded-xl border border-brand-500/20">
+              <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
+            </div>
+            <div>
+              <span class="block text-sm font-bold text-slate-100">Import Backup</span>
+              <span class="block text-xs text-slate-400 mt-0.5">Restore saved PrepFlow data</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">About</h3>
+        <div class="bg-darkcard rounded-2xl border border-darkborder overflow-hidden shadow-sm">
+          <div class="p-4 flex items-center justify-between border-b border-darkborder">
+            <span class="text-sm font-semibold text-slate-300">App Version</span>
+            <span class="text-sm font-bold text-brand-400">1.1.0</span>
+          </div>
+          <div class="p-4 flex items-center justify-between">
+            <span class="text-sm font-semibold text-slate-300">Developed by</span>
+            <span class="text-sm font-bold text-slate-100">Minecade</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBJECT VIEW -->
     <div id="view-subject" class="hidden space-y-5">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center space-x-3">
@@ -497,34 +552,6 @@
     </div>
   </div>
 
-  <!-- SETTINGS MODAL -->
-  <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-darkcard rounded-2xl shadow-2xl border border-darkborder w-full max-w-md overflow-hidden">
-      <div class="p-4 border-b border-darkborder flex justify-between items-center bg-darksubCard">
-        <h3 class="font-bold text-slate-100 text-base flex items-center space-x-2">
-          <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm7.4 3.5c0-.5-.05-1-.16-1.47l2-1.55-2-3.46-2.39.96a7.6 7.6 0 00-2.54-1.47L14 2.5h-4l-.31 2.51a7.6 7.6 0 00-2.54 1.47l-2.39-.96-2 3.46 2 1.55A7.6 7.6 0 004.6 12c0 .5.05 1 .16 1.47l-2 1.55 2 3.46 2.39-.96a7.6 7.6 0 002.54 1.47L10 21.5h4l.31-2.51a7.6 7.6 0 002.54-1.47l2.39.96 2-3.46-2-1.55c.11-.47.16-.97.16-1.47z"/></svg>
-          <span>Settings</span>
-        </h3>
-        <button onclick="app.closeSettings()" class="text-slate-400 hover:text-slate-200" aria-label="Close Settings">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="p-5 space-y-3">
-        <div class="p-4 bg-darksubCard rounded-xl border border-darkborder flex items-center justify-between">
-          <span class="text-sm font-semibold text-slate-300">App Version</span>
-          <span class="text-sm font-bold text-brand-400">1.1.0</span>
-        </div>
-        <div class="p-4 bg-darksubCard rounded-xl border border-darkborder flex items-center justify-between">
-          <span class="text-sm font-semibold text-slate-300">Developed by</span>
-          <span class="text-sm font-bold text-slate-100">Minecade</span>
-        </div>
-      </div>
-      <div class="p-4 border-t border-darkborder bg-darksubCard flex justify-end">
-        <button onclick="app.closeSettings()" class="px-4 py-2 text-xs font-semibold bg-brand-600 hover:bg-brand-500 text-white rounded-xl shadow-md transition-colors">Done</button>
-      </div>
-    </div>
-  </div>
-
   <!-- APPLICATION LOGIC -->
   <script src="cordova.js"></script>
   <script src="js/app.js"></script>
@@ -668,11 +695,11 @@
       }
 
       openSettings() {
-        document.getElementById('settings-modal').classList.remove('hidden');
+        this.navigateTo('settings');
       }
 
       closeSettings() {
-        document.getElementById('settings-modal').classList.add('hidden');
+        this.navigateTo('dashboard');
       }
 
 
@@ -721,6 +748,7 @@
         document.getElementById('view-dashboard').classList.add('hidden');
         document.getElementById('view-subject').classList.add('hidden');
         document.getElementById('view-chapter').classList.add('hidden');
+        document.getElementById('view-settings').classList.add('hidden');
 
         if (view === 'dashboard') {
           this.renderDashboard();
@@ -733,6 +761,8 @@
           this.currentChapterId = param;
           this.renderChapterDetail(param);
           document.getElementById('view-chapter').classList.remove('hidden');
+        } else if (view === 'settings') {
+          document.getElementById('view-settings').classList.remove('hidden');
         }
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
