@@ -274,7 +274,23 @@
       </div>
 
       <div class="space-y-3">
-        <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">About</h3>
+        <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">Danger Zone</h3>
+    <button onclick="app.clearAllData()" class="w-full min-h-[88px] bg-darkcard hover:bg-red-500/10 rounded-2xl p-5 border border-red-500/20 transition-colors flex items-center justify-between text-left shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-red-500/10 rounded-xl border border-red-500/20 flex items-center justify-center">
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="#EF4444" d="M9 3h6l1 2h4v2h-1v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7H4V5h4l1-2Zm-2 4v13h10V7H7Zm2 2h2v9H9V9Zm4 0h2v9h-2V9Z"/></svg>
+        </div>
+        <div>
+          <span class="block text-sm font-bold text-slate-100">Clear All Data</span>
+          <span class="block text-xs text-slate-400 mt-0.5">Delete all saved PrepFlow data from this app</span>
+        </div>
+      </div>
+      <svg class="w-5 h-5 text-slate-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 18l6-6-6-6"/></svg>
+    </button>
+  </div>
+
+  <div class="space-y-3">
+    <h3 class="px-1 text-xs font-bold text-slate-400 uppercase tracking-wider">About</h3>
         <div class="bg-darkcard rounded-2xl border border-darkborder overflow-hidden shadow-sm">
           <div class="p-3 flex items-center justify-between border-b border-darkborder">
             <div class="flex items-center space-x-3">
@@ -662,6 +678,19 @@
             if (message !== 'cancelled') alert('Backup could not be saved.');
           }
         );
+      }
+
+      clearAllData() {
+        if (!confirm('Clear all PrepFlow data? This will permanently delete your saved chapters, progress, notes, revision history, and other app data. The PrepFlow app itself will not be deleted.')) {
+          return;
+        }
+
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          location.reload();
+        } catch (e) {
+          alert('PrepFlow data could not be cleared.');
+        }
       }
 
       importBackup() {
