@@ -221,6 +221,6 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for the f
 
 <div align="center">
 
-### 👨‍💻 Developed by [Minecade](https://github.com/MinecadeXD)
+### Made with ♥️ by [Minecade](https://github.com/MinecadeXD)
 
 </div>
