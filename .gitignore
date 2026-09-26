@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cordova
+platforms/
+plugins/
+www/
+
+# Android / Gradle
+.gradle/
+build/
+*.apk
+*.aab
+*.apks
+*.keystore
+*.jks
+
+# Local Cordova build files
+build_app/
+prepflow-release.keystore
+build.json
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE / editor
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
