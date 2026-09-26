@@ -1,3 +1,5 @@
+<div align="center">
+
 # 📚 PrepFlow
 
 **Study & MHT-CET Preparation Tracker**
@@ -9,6 +11,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 *An offline-friendly study tracker for organizing subjects and chapters, monitoring preparation progress, and managing MHT-CET study data.*
+
+</div>
 
 ---
 
