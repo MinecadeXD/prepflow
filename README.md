@@ -1,8 +1,16 @@
-# PrepFlow
+# 📚 PrepFlow
 
-PrepFlow is a lightweight study and exam-tracking app designed for 11th Science and MHT-CET preparation.
+**Study & MHT-CET Preparation Tracker**
 
-It provides a simple way to organize subjects and chapters, track study progress, and manage study data locally.
+[![Built with HTML](https://img.shields.io/badge/Frontend-HTML%2FCSS%2FJavaScript-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
+[![Cordova](https://img.shields.io/badge/Build-Apache_Cordova-E8E8E8?logo=apachecordova&logoColor=black)](https://cordova.apache.org)
+[![GitHub Actions](https://img.shields.io/badge/Build-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+*An offline-friendly study tracker for organizing subjects and chapters, monitoring preparation progress, and managing MHT-CET study data.*
+
+---
 
 ## Features
 
