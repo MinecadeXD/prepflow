@@ -8,6 +8,7 @@
 [![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
 [![Cordova](https://img.shields.io/badge/Build-Apache_Cordova-E8E8E8?logo=apachecordova&logoColor=black)](https://cordova.apache.org)
 [![GitHub Actions](https://img.shields.io/badge/Build-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![Version](https://img.shields.io/badge/Version-1.17.2-blue)](https://github.com/MinecadeXD/prepflow/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 *An offline-friendly study tracker for organizing subjects and chapters, monitoring preparation progress, and managing MHT-CET study data.*
