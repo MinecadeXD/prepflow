@@ -57,6 +57,10 @@
 
 **1.17.2**
 
+This is the current documented PrepFlow app version. The release build configuration also uses **1.17.2** as the Android application version, and the repository version badge is kept in sync with the current version.
+
+For future releases, update the version in the Android build configuration, the README version badge, and this section together.
+
 ## Technology
 
 - HTML, CSS and JavaScript
@@ -88,9 +92,75 @@ prepflow/
 
 ## Backup Plugin
 
-The repository includes `cordova-plugin-prepflow-backup`, a custom Cordova plugin that provides native Android backup and restore functionality using the Android Storage Access Framework.
+The repository includes `cordova-plugin-prepflow-backup`, a custom Cordova plugin that provides native Android backup and restore functionality through the **Android Storage Access Framework (SAF)**.
 
-The plugin is kept in the repository because it is part of the application's Android build and is not an external dependency that needs to be fetched separately.
+### What it does
+
+The plugin connects the web application to two native Android actions:
+
+- **Export backup** — receives the backup JSON from PrepFlow and opens the Android document picker so the user can choose where to save the backup file.
+- **Import backup** — opens the Android document picker so the user can select an existing JSON backup file, then returns its contents to PrepFlow.
+
+The plugin does not use a fixed app-specific storage path. Android's document picker handles the user's selected file location.
+
+### How it works
+
+```text
+PrepFlow (JavaScript)
+        │
+        ├── exportBackup()
+        │       ↓
+        │   Cordova bridge
+        │       ↓
+        │   ACTION_CREATE_DOCUMENT
+        │       ↓
+        │   Android file picker
+        │       ↓
+        │   Selected JSON file
+        │
+        └── importBackup()
+                ↓
+            Cordova bridge
+                ↓
+            ACTION_OPEN_DOCUMENT
+                ↓
+            Android file picker
+                ↓
+            JSON contents
+                ↓
+            PrepFlow
+```
+
+### JavaScript API
+
+The plugin exposes `PrepFlowBackup` with two methods:
+
+```javascript
+PrepFlowBackup.exportBackup(backupJson, filename, success, error);
+PrepFlowBackup.importBackup(success, error);
+```
+
+**Export parameters**
+- `backupJson` — backup data as a JSON string.
+- `filename` — suggested filename shown by the Android save dialog.
+- `success` — called after the file is successfully written.
+- `error` — called if the operation fails or is cancelled.
+
+**Import callbacks**
+- `success` — receives the selected file contents as a UTF-8 string.
+- `error` — called if the operation fails or is cancelled.
+
+### Android implementation
+
+The native implementation is in:
+
+```text
+cordova-plugin-prepflow-backup/src/android/PrepFlowBackup.java
+```
+
+It uses Android's `ACTION_CREATE_DOCUMENT` and `ACTION_OPEN_DOCUMENT` intents with `application/json` MIME type. Files are read and written through Android's `ContentResolver`.
+
+The plugin is intentionally kept inside this repository because it is part of PrepFlow's Android build rather than a separately fetched application dependency.
 
 ## Building the Android APK
 
