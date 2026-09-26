@@ -19,15 +19,39 @@
 
 ## Features
 
-- Subject and chapter management
-- Study progress tracking
-- MHT-CET preparation support
-- Local/offline data storage
-- Backup and restore of app data
-- Import and export support
-- Clear-all-data option with confirmation
-- Android back navigation support
-- Lightweight single-page app architecture
+### 📊 Dashboard & Progress
+- Overall chapter progress overview with **Total, Completed, In Progress, and Not Started** counts.
+- Subject cards showing chapter counts, completion counts, and overall subject progress.
+- **Active Chapters Focus** section for quickly returning to chapters currently in progress.
+- Subject-level filtering for **All, In Progress, and Not Started** chapters.
+
+### 📚 Chapter Tracking
+- Track individual chapter completion based on multiple study activities.
+- Record **lectures completed / total lectures**.
+- Record **tests completed / total tests**.
+- Mark **Textbook, Practice, Formula Sheet, and CET MCQ** work as completed.
+- Set chapter priority levels: **High, Medium, or Low**.
+- Track **revision count** and the date of the latest revision.
+- Add chapter-specific **notes**.
+- Automatically record the **last studied date**.
+- View calculated chapter progress and completion status.
+
+### 🗂️ Chapter Management
+- Manage chapters for each subject from a dedicated management screen.
+- Add, remove, and reorder chapters.
+- Import or replace chapter lists using a simple text-based chapter editor.
+
+### 💾 Data & Backup
+- Store study data locally on the device for offline use.
+- Export PrepFlow data to a backup file.
+- Import a previously saved backup to restore study data.
+- Clear all app data with a confirmation step.
+
+### 📱 App Experience
+- Dedicated Settings page for app and data management.
+- Android back-button navigation between dashboard, subjects, chapters, settings, and dialogs.
+- Lightweight single-page architecture designed for use as an Android app.
+- No account or online service is required for normal study tracking.
 
 ## Current Version
 
