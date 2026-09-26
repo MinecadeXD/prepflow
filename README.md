@@ -11,6 +11,8 @@
 [![Version](https://img.shields.io/badge/Version-1.17.2-blue)](https://github.com/MinecadeXD/prepflow/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+### [📦 Download Latest Release](https://github.com/MinecadeXD/prepflow/releases/latest)
+
 *An offline-friendly study tracker for organizing subjects and chapters, monitoring preparation progress, and managing MHT-CET study data.*
 
 </div>
