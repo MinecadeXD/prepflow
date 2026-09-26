@@ -57,10 +57,6 @@
 
 **1.17.2**
 
-This is the current documented PrepFlow app version. The release build configuration also uses **1.17.2** as the Android application version, and the repository version badge is kept in sync with the current version.
-
-For future releases, update the version in the Android build configuration, the README version badge, and this section together.
-
 ## Technology
 
 - HTML, CSS and JavaScript
