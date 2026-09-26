@@ -44,7 +44,7 @@ jobs:
           <widget id="com.minecade.prepflow" version="1.17.2" android-versionCode="11702" xmlns="http://w3.org" xmlns:android="http://android.com" xmlns:cdv="http://apache.org">
               <name>PrepFlow</name>
               <description>11th Science &amp; MHT-CET Tracker</description>
-              <author>PrepFlow Team</author>
+              <author>Minecade</author>
               <content src="index.html" />
               <preference name="ScrollEnabled" value="true" />
               <preference name="android-minSdkVersion" value="22" />
