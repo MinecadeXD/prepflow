@@ -70,23 +70,42 @@ The plugin is kept in the repository because it is part of the application's And
 
 ## Building the Android APK
 
-The repository uses GitHub Actions to build the Android release APK.
+PrepFlow's Android release APK is built automatically with GitHub Actions using `.github/workflows/build-apk.yml`.
 
-The workflow:
+### Build process
+
+The workflow runs on pushes to the `main` branch and:
 
 1. Checks out the repository.
 2. Sets up Java 17 and Node.js 20.
-3. Installs Cordova.
-4. Creates a temporary Cordova Android project.
-5. Copies the PrepFlow application files into the project.
-6. Adds the local backup plugin.
-7. Adds the Android platform.
-8. Builds a signed release APK using GitHub repository secrets.
-9. Uploads the resulting APK as a GitHub Actions artifact.
+3. Installs Cordova locally.
+4. Creates a temporary Cordova project with the PrepFlow package ID.
+5. Copies `index.html` and `logo.png` into the Cordova web assets.
+6. Generates the Cordova `config.xml` with the app name, version, author, icon, and Android settings.
+7. Installs the local `cordova-plugin-prepflow-backup` plugin.
+8. Adds the Android platform.
+9. Verifies that the backup plugin and its Android registration were installed correctly.
+10. Decodes the signing keystore from a GitHub Actions secret.
+11. Generates the temporary Cordova signing configuration.
+12. Builds the signed Android release APK.
+13. Verifies that the APK was produced.
+14. Removes the temporary signing files.
+15. Uploads the APK as the `PrepFlow-Release-APK` GitHub Actions artifact.
 
-The signing credentials are supplied through GitHub Actions secrets and are not stored in this repository.
+### Required GitHub Actions secrets
 
-See `.github/workflows/build-apk.yml` for the complete build workflow.
+The workflow expects these repository secrets:
+
+- `KEYSTORE_BASE64`
+- `KEYSTORE_PASSWORD`
+- `KEY_ALIAS`
+- `KEY_PASSWORD`
+
+The signing keystore and passwords are never stored in the repository. Temporary signing files are removed after the APK build.
+
+The generated APK can be downloaded from the workflow's **Artifacts** section after a successful build.
+
+See [`.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml) for the exact implementation.
 
 ## Development
 
