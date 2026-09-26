@@ -15,9 +15,8 @@
         <param name="android-package" value="com.minecade.prepflow.backup.PrepFlowBackup" />
       </feature>
     </config-file>
-          
-<!-- Notice the change to app/src/main/java/ -->
-<source-file src="src/android/PrepFlowBackup.java"
-             target-dir="app/src/main/java/com/minecade/prepflow/backup" />
+
+    <source-file src="src/android/PrepFlowBackup.java"
+                 target-dir="app/src/main/java/com/minecade/prepflow/backup" />
   </platform>
 </plugin>
