@@ -54,6 +54,7 @@
 - Android back-button navigation between dashboard, subjects, chapters, settings, and dialogs.
 - Lightweight single-page architecture designed for use as an Android app.
 - No account or online service is required for normal study tracking.
+- Requires internet at first launch for Downloading UI Dependencies.
 
 ## Current Version
 
